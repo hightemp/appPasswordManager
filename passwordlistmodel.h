@@ -51,8 +51,8 @@ public:
 public slots:
     void fnSetFilePath(QString aFilePath);
     QVariant fnGetFilePath();
-    void fnSetPassword(QVariant sPassword);
     void fnSetPassword(QString sPassword);
+    QString fnGetPassword();
     void fnUpdate();
     QVariant fnLoad();
     QVariant fnSave();

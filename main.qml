@@ -182,6 +182,8 @@ Item {
         property bool settingsPageShowPasswordInList
         property string syncPageServerIP
         property string syncPageSyncMethod
+        property string changePasswordPageOldPasswordText: ""
+        property string changePasswordPageNewPasswordText: ""
 
         Component {
             id: passwordsListViewPage
@@ -513,7 +515,7 @@ Item {
                         right: parent.right
                         top: parent.top
                         left: parent.left
-                        bottom: settingsPageBottomRowLayout.top
+                        bottom: settingsPageBottomColumnLayout.top
                     }
 
                     ColumnLayout {
@@ -534,8 +536,8 @@ Item {
                     }
                 }
 
-                RowLayout {
-                    id: settingsPageBottomRowLayout
+                ColumnLayout {
+                    id: settingsPageBottomColumnLayout
 
                     anchors {
                         right: parent.right
@@ -543,30 +545,47 @@ Item {
                         left: parent.left
                     }
 
-                    Button {
-                        id: settingsPageBackButton
+                    RowLayout {
+                        Button {
+                            id: settingsPageChangePasswordButton
 
-                        Layout.fillWidth: true
-                        text: "Back"
-                        onClicked: {
-                            stackView.pop();
+                            Layout.fillWidth: true
+                            text: "Change master-password"
+                            onClicked: {
+                                stackView.changePasswordPageOldPasswordText = "";
+                                stackView.changePasswordPageNewPasswordText = "";
+                                stackView.push(changePasswordPage);
+                            }
                         }
                     }
 
-                    Button {
-                        id: settingsPageSaveButton
+                    RowLayout {
+                        Button {
+                            id: settingsPageBackButton
 
-                        Layout.fillWidth: true
-                        text: "Save"
-                        onClicked: {
-                            oSettingsModel.fnUpdateBoolValue("settingsPageShowUserInList", settingsPageShowUserInList.checked);
-                            oSettingsModel.fnUpdateBoolValue("settingsPageShowPasswordInList", settingsPageShowPasswordsInList.checked);
-                            oPasswordListModel.fnUpdate();
-                            oSettingsModel.fnSave();
-                            stackView.pop();
+                            Layout.fillWidth: true
+                            text: "Back"
+                            onClicked: {
+                                stackView.pop();
+                            }
+                        }
+
+                        Button {
+                            id: settingsPageSaveButton
+
+                            Layout.fillWidth: true
+                            text: "Save"
+                            onClicked: {
+                                oSettingsModel.fnUpdateBoolValue("settingsPageShowUserInList", settingsPageShowUserInList.checked);
+                                oSettingsModel.fnUpdateBoolValue("settingsPageShowPasswordInList", settingsPageShowPasswordsInList.checked);
+                                oPasswordListModel.fnUpdate();
+                                oSettingsModel.fnSave();
+                                stackView.pop();
+                            }
                         }
                     }
                 }
+
             }
         }
 
@@ -673,34 +692,34 @@ Item {
                     }
 
                     Button {
-                        id: syncPageSaveButton
+                        id: syncPageSyncButton
 
                         Layout.fillWidth: true
                         text: "Sync"
                         onClicked: {
                             syncPageBackButton.enabled = false;
-                            syncPageSaveButton.enabled = false;
+                            syncPageSyncButton.enabled = false;
                             syncPageServerIPTextField.enabled = false;
                             syncPageSyncMethodComboBox.enabled = false
                             syncPageBusyIndicator.visible = true;
 
                             passwordSyncClient.sCommand = "SYNC_"+oSettingsModel.fnGetStringValue("syncPageSyncMethod");
-                            passwordSyncClient.fnCallBack = this.settingsPageSaveButtonCallBack;
-                            passwordSyncClient.fnErrorCallBack = this.settingsPageSaveButtonErrorCallBack;
+                            passwordSyncClient.fnCallBack = this.settingsPageSyncButtonCallBack;
+                            passwordSyncClient.fnErrorCallBack = this.settingsPageSyncButtonErrorCallBack;
                             passwordSyncClient.url = "ws://"+syncPageServerIPTextField.text+":3002";
                             passwordSyncClient.active = true;
                         }
 
-                        function settingsPageSaveButtonErrorCallBack()
+                        function settingsPageSyncButtonErrorCallBack()
                         {
-                            settingsPageSaveButtonCallBack();
+                            settingsPageSyncButtonCallBack();
                         }
 
-                        function settingsPageSaveButtonCallBack()
+                        function settingsPageSyncButtonCallBack()
                         {
                             syncPageBusyIndicator.visible = false;
                             syncPageBackButton.enabled = true;
-                            syncPageSaveButton.enabled = true;
+                            syncPageSyncButton.enabled = true;
                             syncPageServerIPTextField.enabled = true;
                             syncPageSyncMethodComboBox.enabled = true
                             passwordSyncClient.active = false;
@@ -709,6 +728,145 @@ Item {
                 }
             }
         }
+
+        Component {
+            id: changePasswordPage
+
+            Item {
+                id: changePasswordPageRectangle
+                //color: "transparent"
+                //visible: false
+
+                ScrollView {
+                    id: changePasswordPageScrollView
+
+                    anchors {
+                        right: parent.right
+                        top: parent.top
+                        left: parent.left
+                        bottom: changePasswordPageBottomRowLayout.top
+                    }
+
+                    BusyIndicator {
+                        id: changePasswordPageBusyIndicator
+                        anchors.centerIn: parent
+                        visible: false
+                        running: true
+                    }
+
+                    ColumnLayout {
+                        spacing: 2
+                        anchors.fill: parent
+
+                        anchors.margins: 10
+
+                        Label {
+                            text: "Old password"
+                        }
+                        TextField {
+                            id: changePasswordPageOldPasswordTextField
+                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignJustify
+
+                            focus: true
+                            text: stackView.changePasswordPageOldPasswordText
+                            selectByMouse: true
+                            echoMode: TextInput.Password
+                        }
+                        Label {
+                            text: "New password"
+                        }
+                        TextField {
+                            id: changePasswordPageNewPasswordTextField
+                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignJustify
+
+                            focus: true
+                            text: stackView.changePasswordPageNewPasswordText
+                            selectByMouse: true
+                            echoMode: TextInput.Password
+                        }
+                        Label {
+                            id: changePasswordPageStatusLabel
+                            text: "Status:"
+                        }
+                        Item { Layout.fillHeight: true }
+                    }
+                }
+
+                RowLayout {
+                    id: changePasswordPageBottomRowLayout
+
+                    anchors {
+                        right: parent.right
+                        bottom: parent.bottom
+                        left: parent.left
+                    }
+
+                    Button {
+                        id: changePasswordPageBackButton
+
+                        Layout.fillWidth: true
+                        text: "Back"
+
+                        onClicked: {
+                            stackView.pop();
+                        }
+                    }
+
+                    Button {
+                        id: changePasswordPageSaveButton
+
+                        Layout.fillWidth: true
+                        text: "Save"
+
+                        onClicked: {
+                            changePasswordPageBusyIndicator.visible = true;
+                            changePasswordPageBackButton.enabled = false;
+                            changePasswordPageSaveButton.enabled = false;
+                            changePasswordPageOldPasswordTextField.enabled = false;
+                            changePasswordPageNewPasswordTextField.enabled = false;
+                            /*
+                            passwordSyncClient.sCommand = "SYNC_"+oSettingsModel.fnGetStringValue("syncPageSyncMethod");
+                            passwordSyncClient.fnCallBack = this.settingsPageSyncButtonCallBack;
+                            passwordSyncClient.fnErrorCallBack = this.settingsPageSyncButtonErrorCallBack;
+                            passwordSyncClient.url = "ws://"+syncPageServerIPTextField.text+":3002";
+                            passwordSyncClient.active = true;
+                            */
+
+                            if (changePasswordPageNewPasswordTextField.text.length >= 8) {
+                                if (changePasswordPageOldPasswordTextField.text == oPasswordListModel.fnGetPassword()) {
+                                    oPasswordListModel.fnSetPassword(changePasswordPageNewPasswordTextField.text);
+                                    changePasswordPageStatusLabel.text = "Status: password changed"
+                                } else {
+                                    changePasswordPageStatusLabel.text = "Status: wrong old password"
+                                }
+                            } else {
+                                changePasswordPageStatusLabel.text = "Status: new password can't less than 8 symbols"
+                            }
+
+                            settingsPageSyncButtonCallBack();
+                        }
+
+                        function settingsPageSyncButtonErrorCallBack()
+                        {
+                            settingsPageSyncButtonCallBack();
+                        }
+
+                        function settingsPageSyncButtonCallBack()
+                        {
+                            changePasswordPageBusyIndicator.visible = false;
+                            changePasswordPageBackButton.enabled = true;
+                            changePasswordPageSaveButton.enabled = true;
+                            changePasswordPageOldPasswordTextField.enabled = true;
+                            changePasswordPageNewPasswordTextField.enabled = true;
+                            passwordSyncClient.active = false;
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     MessageDialog {

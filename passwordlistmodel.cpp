@@ -211,16 +211,15 @@ QVariant PasswordListModel::fnGetFilePath()
     return this->sFilePath;
 }
 
-void PasswordListModel::fnSetPassword(QVariant sPassword)
-{
-    qDebug() << __FUNCTION__;
-    this->sPassword = sPassword.toString();
-}
-
 void PasswordListModel::fnSetPassword(QString sPassword)
 {
     qDebug() << __FUNCTION__;
     this->sPassword = sPassword;
+}
+
+QString PasswordListModel::fnGetPassword()
+{
+    return this->sPassword;
 }
 
 void PasswordListModel::fnUpdate()
