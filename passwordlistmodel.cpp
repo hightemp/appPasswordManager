@@ -20,7 +20,9 @@ QHash<int,QByteArray> PasswordListModel::roleNames() const
         { NameRole, "name" },
         { UserRole, "user" },
         { PasswordRole, "password" },
-        { DeletedRole, "deleted" }
+        { DeletedRole, "deleted" },
+        { AdditionalRole, "additional" },
+        { IDRole, "id" }
     };
 }
 
@@ -44,6 +46,10 @@ QVariant PasswordListModel::data(const QModelIndex &oIndex, int iRole) const
         return oJsonObject["password"].toString();
     } if (iRole == DeletedRole) {
         return oJsonObject["deleted"].toBool();
+    } if (iRole == AdditionalRole) {
+        return oJsonObject["additional"].toString();
+    } if (iRole == IDRole) {
+        return oJsonObject["id"].toString();
     } else
         return QVariant();
 }
@@ -62,6 +68,12 @@ bool PasswordListModel::setData(const QModelIndex &oIndex, const QVariant &oValu
             }
             if (iRole == PasswordRole) {
                 oJsonObject["password"] = oValue.toString();
+            }
+            if (iRole == AdditionalRole) {
+                oJsonObject["additional"] = oValue.toString();
+            }
+            if (iRole == IDRole) {
+                oJsonObject["id"] = oValue.toString();
             }
             QJsonValue oJsonValue(oJsonObject);
             this->poJsonArray->replace(oIndex.row(), oJsonValue);
@@ -99,13 +111,36 @@ Qt::ItemFlags PasswordListModel::flags(const QModelIndex &oIndex) const
     return QAbstractItemModel::flags(oIndex) | Qt::ItemIsEditable;
 }
 
+QString PasswordListModel::fnGenerateIndex()
+{
+    static QVector<QString> oLettersVector;
+    QString sResult = "";
+
+    if (oLettersVector.length() == 0) {
+        for (int iIndex=97;iIndex<123;iIndex++) {
+            oLettersVector.append(QChar(iIndex));
+        }
+        for (int iIndex=48;iIndex<58;iIndex++) {
+            oLettersVector.append(QChar(iIndex));
+        }
+    }
+
+    for (int iIndex=0; iIndex<10; iIndex++) {
+        sResult.append(oLettersVector[qrand() % oLettersVector.length()]);
+    }
+
+    return sResult;
+}
+
 bool PasswordListModel::insertRows(int iPosition, int iRows, const QModelIndex &oParent)
 {
     qDebug() << __FUNCTION__;
     beginInsertRows(QModelIndex(), iPosition, iPosition+iRows-1);
 
     for (int iRow = 0; iRow < iRows; ++iRow) {
-        QJsonValue oJsonValue("");
+        QJsonObject oJsonObject;
+        oJsonObject["id"] = this->fnGenerateIndex();
+        QJsonValue oJsonValue(oJsonObject);
         this->poJsonArray->insert(iPosition, oJsonValue);
     }
 
@@ -298,23 +333,40 @@ QVariant PasswordListModel::fnToByteArray()
     Encrypter oEncrypter;
     QByteArray sResult;
     int iEncryptResult = oEncrypter.fnEncrypt(this->sPassword, oJsonDocument.toJson(), sResult);
+    qDebug() << "oEncrypter.fnEncrypt" << iEncryptResult;
 
     return sResult;
 }
 
-void PasswordListModel::fnFromByteArray(QVariant oByteArray, QVariant iSyncMethod)
+QVariant PasswordListModel::fnFromByteArray(QVariant oByteArray, QVariant iSyncMethod)
 {
     beginResetModel();
 
     Encrypter oEncrypter;
     QByteArray sResult;
     int iEncryptResult = oEncrypter.fnDecrypt(this->sPassword, oByteArray.toByteArray(), sResult);
+    qDebug() << "oEncrypter.fnDecrypt" << iEncryptResult;
 
     QJsonDocument oJsonDocument = QJsonDocument::fromJson(sResult);
 
     if (iSyncMethod.toInt() == 0) {
         *this->poJsonArray = oJsonDocument.array();
     }
+    if (iSyncMethod.toInt() == 1) {
+        QJsonArray oRemoteJsonArray = oJsonDocument.array();
+
+        for (int iRemoteIndex=0; iRemoteIndex<oRemoteJsonArray.size(); iRemoteIndex++) {
+            QJsonObject oRemoteJsonObject = oRemoteJsonArray[iRemoteIndex].toObject();
+
+            for (int iLocalIndex=0; iLocalIndex<this->poJsonArray->size(); iLocalIndex++) {
+                if (oRemoteJsonObject["id"] != (*this->poJsonArray)[iLocalIndex].toObject()["id"]) {
+                    this->poJsonArray->append(oRemoteJsonObject);
+                }
+            }
+        }
+    }
 
     endResetModel();
+
+    return iEncryptResult;
 }

@@ -7,12 +7,10 @@ import QtQuick.Window 2.12
 import QtWebSockets 1.1
 import PasswordListModel 1.0
 
-ApplicationWindow {
-    id: applicationWindow
+Item {
+    id: applicationWindowRootObject
     visible: true
-    width: 640
-    height: 480
-    title: qsTr("Passwords")
+    anchors.fill: parent
 
     SystemTrayIcon {
         visible: true
@@ -27,29 +25,32 @@ ApplicationWindow {
 
         onActivated: {
             if(reason !== SystemTrayIcon.Context) {
-                applicationWindow.show()
-                applicationWindow.raise()
-                applicationWindow.requestActivate()
+                oWindow.show()
+                oWindow.raise()
+                oWindow.requestActivate()
             }
         }
     }
 
-    onClosing: {
-        close.accepted = false
-        applicationWindow.hide()
+    Connections {
+        target: oWindow
+        onClosing: {
+            oWindow.hide();
+            close.accepted = false
+        }
     }
 
     onXChanged: {
-        oSettingsModel.fnUpdateStringValue("applicationWindow.x", applicationWindow.x);
+        oSettingsModel.fnUpdateStringValue("applicationWindow.x", oWindow.x);
         oSettingsModel.fnSave();
     }
 
     onYChanged: {
-        oSettingsModel.fnUpdateStringValue("applicationWindow.y", applicationWindow.y);
+        oSettingsModel.fnUpdateStringValue("applicationWindow.y", oWindow.y);
         oSettingsModel.fnSave();
     }
 
-    Component.onCompleted: {}
+    //Component.onCompleted: {}
 
     function fnStart()
     {
@@ -59,8 +60,8 @@ ApplicationWindow {
 
         oSettingsModel.fnLoad();
 
-        applicationWindow.setX(oSettingsModel.fnGetStringValue("applicationWindow.x"));
-        applicationWindow.setY(oSettingsModel.fnGetStringValue("applicationWindow.y"));
+        oWindow.setX(oSettingsModel.fnGetStringValue("applicationWindow.x"));
+        oWindow.setY(oSettingsModel.fnGetStringValue("applicationWindow.y"));
 
         if (!oPasswordListModel.fnFileExists()) {
             return masterPasswordFirstRunMessageDialog.open();
@@ -113,9 +114,18 @@ ApplicationWindow {
 
         onBinaryMessageReceived: {
             if (sCommand == "SYNC_0" || sCommand == "SYNC_1") {
-                oPasswordListModel.fnFromByteArray(message, {SYNC_0:0, SYNC_1:1}[sCommand]);
-                oPasswordListModel.fnSave();
-                sStatus = "Status: synchronized";
+                console.log(message);
+                var iResult = oPasswordListModel.fnFromByteArray(message, {SYNC_0:0, SYNC_1:1}[sCommand]);
+                if (iResult == -3) {
+                    sStatus = "Status: wrong password";
+                }
+                if (iResult == -2 || iResult == -1) {
+                    sStatus = "Status: empty key or string";
+                }
+                if (iResult == 0) {
+                    oPasswordListModel.fnSave();
+                    sStatus = "Status: synchronized";
+                }
                 if (fnCallBack)
                     fnCallBack();
             }
@@ -156,6 +166,7 @@ ApplicationWindow {
         property string sName: ""
         property string sUser: ""
         property string sPassword: ""
+        property string sAdditional: ""
         property bool settingsPageShowUserInList
         property bool settingsPageShowPasswordInList
         property string syncPageServerIP
@@ -166,6 +177,16 @@ ApplicationWindow {
 
             Rectangle {
                 id: passwordsListViewRectangle
+                color: "transparent"
+
+                Keys.onReleased: {
+                    if (event.key == Qt.Key_Back) {
+                        console.log("Back button captured - wunderbar !")
+                        event.accepted = true
+                        Qt.quit();
+                    }
+                }
+
                 ScrollView {
                     id: passwordsListViewScrollView
                     anchors {
@@ -216,6 +237,7 @@ ApplicationWindow {
                                     stackView.sName = model.name;
                                     stackView.sUser = model.user;
                                     stackView.sPassword = model.password;
+                                    stackView.sAdditional = model.additional;
                                     stackView.iEditedRecordIndex = model.index;
 
                                     stackView.push(passwordEditPage);
@@ -240,7 +262,7 @@ ApplicationWindow {
 
                         Button {
                             id: addButton
-                            //Layout.minimumWidth: (parent.width-20)/4 + 1
+                            //Layout.minimumWidth: (parent.width-20)/2 + 1
                             text: "Add"
                             Layout.fillWidth: true
 
@@ -249,6 +271,7 @@ ApplicationWindow {
                                 stackView.sName = "";
                                 stackView.sUser = "";
                                 stackView.sPassword = "";
+                                stackView.sAdditional = "";
 
                                 stackView.push(passwordEditPage);
                             }
@@ -256,7 +279,7 @@ ApplicationWindow {
 
                         Button {
                             id: deleteButton
-                            //Layout.minimumWidth: (parent.width-20)/4 + 1
+                            //Layout.minimumWidth: (parent.width-20)/2 + 1
                             text: "Delete"
                             Layout.fillWidth: true
 
@@ -272,7 +295,7 @@ ApplicationWindow {
 
                         Button {
                             id: syncButton
-                            //Layout.minimumWidth: (parent.width-20)/4 + 1
+                            //Layout.minimumWidth: (parent.width-20)/2 + 1
                             text: "Synchronize"
                             Layout.fillWidth: true
 
@@ -285,7 +308,7 @@ ApplicationWindow {
 
                         Button {
                             id: settingsButton
-                            //Layout.minimumWidth: (parent.width-20)/4 + 1
+                            //Layout.minimumWidth: (parent.width-20)/2 + 1
                             text: "Settings"
                             Layout.fillWidth: true
 
@@ -305,6 +328,8 @@ ApplicationWindow {
             id: passwordEditPage
 
             Rectangle {
+                color: "transparent"
+
                 ScrollView {
                     id: passwordEditPageScrollView
                     anchors {
@@ -328,7 +353,7 @@ ApplicationWindow {
 
                             TextField {
                                 id: nameTextField
-                                Layout.minimumWidth: passwordEditPageScrollView.width-passwordEditPageCopyNameButton.width-20
+                                Layout.minimumWidth: passwordEditPageScrollView.width-passwordEditPageCopyNameButton.width-25
                                 text: stackView.sName
                                 selectByMouse: true
                             }
@@ -351,7 +376,7 @@ ApplicationWindow {
 
                             TextField {
                                 id: userTextField
-                                Layout.minimumWidth: passwordEditPageScrollView.width-passwordEditPageCopyUserButton.width-20
+                                Layout.minimumWidth: passwordEditPageScrollView.width-passwordEditPageCopyUserButton.width-25
                                 text: stackView.sUser
                                 selectByMouse: true
                             }
@@ -374,7 +399,7 @@ ApplicationWindow {
 
                             TextField {
                                 id: passwordTextField
-                                Layout.minimumWidth: passwordEditPageScrollView.width-passwordEditPageCopyPasswordButton.width-20
+                                Layout.minimumWidth: passwordEditPageScrollView.width-passwordEditPageCopyPasswordButton.width-25
                                 text: stackView.sPassword
                                 selectByMouse: true
                             }
@@ -384,6 +409,40 @@ ApplicationWindow {
                                 text: "Copy"
                                 onClicked: {
                                     oClipboard.fnCopy(passwordTextField.text);
+                                }
+                            }
+                        }
+
+                        Label {
+                            text: "Additional"
+                        }
+
+                        RowLayout {
+                            spacing: 2
+                            Layout.fillHeight: true;
+
+                            Rectangle {
+                                border.width: 1
+                                border.color: "gray"
+                                Layout.minimumWidth: passwordEditPageScrollView.width-passwordEditPageCopyAdditionalButton.width-25
+                                Layout.minimumHeight: 200;
+
+                                ScrollView {
+                                    anchors.fill: parent
+
+                                    TextArea {
+                                        id: additionalTextArea
+                                        text: stackView.sAdditional
+                                        selectByMouse: true
+                                    }
+                                }
+                            }
+
+                            Button {
+                                id: passwordEditPageCopyAdditionalButton
+                                text: "Copy"
+                                onClicked: {
+                                    oClipboard.fnCopy(additionalTextArea.text);
                                 }
                             }
                         }
@@ -424,6 +483,7 @@ ApplicationWindow {
                                 oPasswordListModel.setData(oIndex, nameTextField.text, PasswordListModel.NameRole);
                                 oPasswordListModel.setData(oIndex, userTextField.text, PasswordListModel.UserRole);
                                 oPasswordListModel.setData(oIndex, passwordTextField.text, PasswordListModel.PasswordRole);
+                                oPasswordListModel.setData(oIndex, additionalTextArea.text, PasswordListModel.AdditionalRole);
                             }
 
                             stackView.pop();
@@ -437,6 +497,8 @@ ApplicationWindow {
             id: settingsPage
 
             Rectangle {
+                color: "transparent"
+
                 ScrollView {
                     id: settingsPageScrollView
                     anchors {
@@ -504,6 +566,8 @@ ApplicationWindow {
             id: syncPage
 
             Rectangle {
+                color: "transparent"
+
                 ScrollView {
                     id: syncPageScrollView
                     anchors {
@@ -773,4 +837,5 @@ ApplicationWindow {
             masterPasswordField.focus = true;
         }
    }
+
 }

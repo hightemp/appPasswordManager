@@ -3,6 +3,7 @@
 #include <QQmlContext>
 #include <QDir>
 #include <QIcon>
+#include <QQuickView>
 #include "passwordlistmodel.h"
 #include "passwordlistsortfilterproxymodel.h"
 #include "settingsmodel.h"
@@ -13,10 +14,6 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     QGuiApplication app(argc, argv);
-
-    //QPixmap oPixmap(":/images/key-icon.png");
-    //QSplashScreen oSplashScreen(oPixmap);
-    //oSplashScreen.show();
 
     app.setWindowIcon(QIcon(":/images/key-icon.png"));
 
@@ -36,16 +33,22 @@ int main(int argc, char *argv[])
         sPasswordsFilePath = QDir::homePath() + "/" + sPasswordsFileName;
     }
 
-    QQmlApplicationEngine oEngine;
     qmlRegisterType<PasswordListModel>("PasswordListModel", 1, 0, "PasswordListModel");
-    oEngine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+
+    QQuickView oView;
+    oView.setSource(QUrl(QStringLiteral("qrc:/main.qml")));
+    oView.setResizeMode(QQuickView::SizeRootObjectToView);
+    oView.setGeometry(QRect(0, 0, 640, 480));
+    QObject::connect(oView.engine(), SIGNAL(quit()), qApp, SLOT(quit()));
+    oView.setTitle("Passwords manager");
+    //oView.
 
     qDebug() << sPasswordsFilePath;
 
     Clipboard oClipboard;
     oClipboard.fnSetClipboard(QGuiApplication::clipboard());
 
-    oEngine.rootContext()->setContextProperty("oClipboard", &oClipboard);
+    oView.rootContext()->setContextProperty("oClipboard", &oClipboard);
 
     PasswordListModel oPasswordListModel;
     oPasswordListModel.fnSetFilePath(sPasswordsFilePath);
@@ -53,29 +56,20 @@ int main(int argc, char *argv[])
     PasswordListSortFilterProxyModel oPasswordListSortFilterProxyModel;
     oPasswordListSortFilterProxyModel.setSourceModel(&oPasswordListModel);
 
-    oEngine.rootContext()->setContextProperty("oPasswordListModel", &oPasswordListModel);
-    oEngine.rootContext()->setContextProperty("oPasswordListSortFilterProxyModel", &oPasswordListSortFilterProxyModel);
+    oView.rootContext()->setContextProperty("oPasswordListModel", &oPasswordListModel);
+    oView.rootContext()->setContextProperty("oPasswordListSortFilterProxyModel", &oPasswordListSortFilterProxyModel);
 
     SettingsModel oSettingsModel;
 
     oSettingsModel.fnSetFilePath(sConfigFilePath);
 
-    oEngine.rootContext()->setContextProperty("oSettingsModel", &oSettingsModel);
+    oView.rootContext()->setContextProperty("oSettingsModel", &oSettingsModel);
+    oView.rootContext()->setContextProperty("oWindow", &oView);
 
-    QMetaObject::invokeMethod(oEngine.rootObjects().first(), "fnStart");
+    oView.show();
 
-    //oEngine.findChild<QObject*>("passwordsListView")->setProperty("model", &oPasswordListModel);
+    QObject* oRootObject = (QObject*) oView.rootObject();
+    QMetaObject::invokeMethod(oRootObject, "fnStart");
 
-    //QObject *oRootObject = qobject_cast<QObject*>(oEngine.rootObjects().first());
-
-    /*
-    QObject::connect(
-        oRootObject,
-        SIGNAL(fnTest(QVariant)),
-        &oPasswordStore,
-        SLOT(fnTest(QVariant))
-    );
-    */
-    //oSplashScreen.finish();
     return app.exec();
 }

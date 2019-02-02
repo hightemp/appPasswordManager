@@ -26,7 +26,9 @@ public:
         NameRole = Qt::UserRole + 1,
         UserRole,
         PasswordRole,
-        DeletedRole
+        DeletedRole,
+        AdditionalRole,
+        IDRole
     };
 
     explicit PasswordListModel(QObject *poParent = nullptr);
@@ -37,6 +39,7 @@ public:
     bool setData(const QModelIndex &oIndex, const QVariant &oValue, int iRole = Qt::EditRole) override;
     QVariant headerData(int iSection, Qt::Orientation oOrientation, int iRole = Qt::DisplayRole) const override;
     Qt::ItemFlags flags(const QModelIndex &oIndex) const override;
+    QString fnGenerateIndex();
     bool insertRows(int iPosition, int iRows, const QModelIndex &oParent = QModelIndex()) override;
     bool removeRows(int iPosition, int iRows, const QModelIndex &oParent = QModelIndex()) override;
     QModelIndex index(int iRow, int iColumn, const QModelIndex &oParent = QModelIndex()) const override;
@@ -58,7 +61,7 @@ public slots:
     void fnRemoveRow(int iIndex);
     QVariant fnSize();
     QVariant fnToByteArray();
-    void fnFromByteArray(QVariant oByteArray, QVariant iSyncMethod);
+    QVariant fnFromByteArray(QVariant oByteArray, QVariant iSyncMethod);
 };
 
 #endif // PASSWORDLISTMODEL_H
