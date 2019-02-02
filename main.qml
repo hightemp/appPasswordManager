@@ -38,6 +38,9 @@ Item {
             oWindow.hide();
             close.accepted = false
         }
+        onVisibilityChanged: {
+           console.log("onVisibilityChanged", oWindow.visibility, oWindow.visible);
+        }
     }
 
     onXChanged: {
@@ -83,10 +86,10 @@ Item {
                 .onTextMessageReceived
                 .connect(function(sCommand)
                 {
-                    if (sCommand == "SYNC_0" || sCommand == "SYNC_1") {
+                    if (sCommand == "SYNC_0" || sCommand == "SYNC_1" || sCommand == "SYNC_2") {
                         webSocket.sendBinaryMessage(oPasswordListModel.fnToByteArray());
                     }
-                    if (sCommand == "SYNC_2" || sCommand == "SYNC_3") {
+                    if (sCommand == "SYNC_3" || sCommand == "SYNC_4" || sCommand == "SYNC_5") {
                         webSocket
                             .onBinaryMessageReceived
                             .connect(function(sMessage)
@@ -113,16 +116,16 @@ Item {
         active: false
 
         onBinaryMessageReceived: {
-            if (sCommand == "SYNC_0" || sCommand == "SYNC_1") {
+            if (sCommand == "SYNC_0" || sCommand == "SYNC_1" || sCommand == "SYNC_2") {
                 console.log(message);
-                var iResult = oPasswordListModel.fnFromByteArray(message, {SYNC_0:0, SYNC_1:1}[sCommand]);
+                var iResult = oPasswordListModel.fnFromByteArray(message, {SYNC_0:0, SYNC_1:1, SYNC_2:2}[sCommand]);
                 if (iResult == -3) {
                     sStatus = "Status: wrong password";
                 }
                 if (iResult == -2 || iResult == -1) {
                     sStatus = "Status: empty key or string";
                 }
-                if (iResult == 0) {
+                if (iResult == 1) {
                     oPasswordListModel.fnSave();
                     sStatus = "Status: synchronized";
                 }
@@ -141,7 +144,7 @@ Item {
 
                 sendTextMessage(sCommand);
 
-                if (sCommand == "SYNC_2" || sCommand == "SYNC_3") {
+                if (sCommand == "SYNC_3" || sCommand == "SYNC_4" || sCommand == "SYNC_5") {
                     sendBinaryMessage(oPasswordListModel.fnToByteArray());
                     sStatus = "Status: synchronized";
                     if (fnCallBack)
@@ -154,6 +157,14 @@ Item {
             } else if (status == WebSocket.Closed) {
                 //sStatus = "Status: connection closed";
             }
+        }
+    }
+
+    Keys.onReleased: {
+        if (event.key == Qt.Key_Back) {
+            console.log("Back button captured - wunderbar !")
+            event.accepted = true
+            Qt.quit();
         }
     }
 
@@ -175,17 +186,10 @@ Item {
         Component {
             id: passwordsListViewPage
 
-            Rectangle {
+            Item {
                 id: passwordsListViewRectangle
-                color: "transparent"
-
-                Keys.onReleased: {
-                    if (event.key == Qt.Key_Back) {
-                        console.log("Back button captured - wunderbar !")
-                        event.accepted = true
-                        Qt.quit();
-                    }
-                }
+                //color: "transparent"
+                anchors.fill: parent
 
                 ScrollView {
                     id: passwordsListViewScrollView
@@ -327,8 +331,10 @@ Item {
         Component {
             id: passwordEditPage
 
-            Rectangle {
-                color: "transparent"
+            Item {
+                id: passwordEditPageRectangle
+                //color: "transparent"
+                //visible: false
 
                 ScrollView {
                     id: passwordEditPageScrollView
@@ -496,8 +502,10 @@ Item {
         Component {
             id: settingsPage
 
-            Rectangle {
-                color: "transparent"
+            Item {
+                id: settingsPageRectangle
+                //color: "transparent"
+                //visible: false
 
                 ScrollView {
                     id: settingsPageScrollView
@@ -565,8 +573,10 @@ Item {
         Component {
             id: syncPage
 
-            Rectangle {
-                color: "transparent"
+            Item {
+                id: syncPageRectangle
+                //color: "transparent"
+                //visible: false
 
                 ScrollView {
                     id: syncPageScrollView
@@ -618,8 +628,10 @@ Item {
                             model: [
                                 "Download and replace",
                                 "Download and merge",
+                                "Download and add new",
                                 "Upload and replace",
-                                "Upload and merge"
+                                "Upload and merge",
+                                "Upload and add new"
                             ]
 
                             currentIndex: stackView.syncPageSyncMethod

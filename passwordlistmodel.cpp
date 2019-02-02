@@ -125,6 +125,8 @@ QString PasswordListModel::fnGenerateIndex()
         }
     }
 
+    qsrand((unsigned int) time(NULL));
+
     for (int iIndex=0; iIndex<10; iIndex++) {
         sResult.append(oLettersVector[qrand() % oLettersVector.length()]);
     }
@@ -349,19 +351,35 @@ QVariant PasswordListModel::fnFromByteArray(QVariant oByteArray, QVariant iSyncM
 
     QJsonDocument oJsonDocument = QJsonDocument::fromJson(sResult);
 
+    qDebug() << "iSyncMethod.toInt()" << iSyncMethod.toInt();
     if (iSyncMethod.toInt() == 0) {
         *this->poJsonArray = oJsonDocument.array();
     }
-    if (iSyncMethod.toInt() == 1) {
+    if (iSyncMethod.toInt() == 1 || iSyncMethod.toInt() == 2) {
         QJsonArray oRemoteJsonArray = oJsonDocument.array();
 
+        qDebug() << "oRemoteJsonArray.size()" << oRemoteJsonArray.size();
+        qDebug() << "this->poJsonArray->size()" << this->poJsonArray->size();
         for (int iRemoteIndex=0; iRemoteIndex<oRemoteJsonArray.size(); iRemoteIndex++) {
             QJsonObject oRemoteJsonObject = oRemoteJsonArray[iRemoteIndex].toObject();
 
-            for (int iLocalIndex=0; iLocalIndex<this->poJsonArray->size(); iLocalIndex++) {
-                if (oRemoteJsonObject["id"] != (*this->poJsonArray)[iLocalIndex].toObject()["id"]) {
-                    this->poJsonArray->append(oRemoteJsonObject);
+            bool bFound = false;
+
+            if (this->poJsonArray->size()>0) {
+                for (int iLocalIndex=0; iLocalIndex<this->poJsonArray->size(); iLocalIndex++) {
+                    qDebug() << oRemoteJsonObject << (*this->poJsonArray)[iLocalIndex].toObject() << (oRemoteJsonObject["id"] != (*this->poJsonArray)[iLocalIndex].toObject()["id"]);
+                    QJsonObject oLocalJsonObject = (*this->poJsonArray)[iLocalIndex].toObject();
+                    if (oRemoteJsonObject["id"] == oLocalJsonObject["id"]) {
+                        bFound = true;
+                        if (iSyncMethod.toInt() == 1) {
+                            this->poJsonArray->replace(iLocalIndex, oRemoteJsonObject);
+                        }
+                    }
                 }
+            }
+
+            if (!bFound) {
+                this->poJsonArray->append(oRemoteJsonObject);
             }
         }
     }
