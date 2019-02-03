@@ -8,6 +8,8 @@
 #include "passwordlistsortfilterproxymodel.h"
 #include "settingsmodel.h"
 #include "clipboard.h"
+#include "styler.h"
+#include <QPalette>
 
 int main(int argc, char *argv[])
 {
@@ -35,20 +37,20 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<PasswordListModel>("PasswordListModel", 1, 0, "PasswordListModel");
 
-    QQuickView oView;
-    oView.setSource(QUrl(QStringLiteral("qrc:/main.qml")));
-    oView.setResizeMode(QQuickView::SizeRootObjectToView);
-    oView.setGeometry(QRect(0, 0, 640, 480));
-    QObject::connect(oView.engine(), SIGNAL(quit()), qApp, SLOT(quit()));
-    oView.setTitle("Passwords manager");
-    //oView.
+    SettingsModel oSettingsModel;
+    oSettingsModel.fnSetFilePath(sConfigFilePath);
 
-    qDebug() << sPasswordsFilePath;
+    if (!oSettingsModel.fnFileExists()) {
+        oSettingsModel.fnSave();
+    }
 
-    Clipboard oClipboard;
-    oClipboard.fnSetClipboard(QGuiApplication::clipboard());
+    oSettingsModel.fnLoad();
 
-    oView.rootContext()->setContextProperty("oClipboard", &oClipboard);
+    Styler oStyler;
+
+    qDebug() << oSettingsModel.fnGetStringValue("settingsPageStyle");
+
+    oStyler.fnSetStyle(oSettingsModel.fnGetStringValue("settingsPageStyle").toInt());
 
     PasswordListModel oPasswordListModel;
     oPasswordListModel.fnSetFilePath(sPasswordsFilePath);
@@ -56,15 +58,28 @@ int main(int argc, char *argv[])
     PasswordListSortFilterProxyModel oPasswordListSortFilterProxyModel;
     oPasswordListSortFilterProxyModel.setSourceModel(&oPasswordListModel);
 
+    Clipboard oClipboard;
+    oClipboard.fnSetClipboard(QGuiApplication::clipboard());
+
+    QQuickView oView;
+    oView.setSource(QUrl(QStringLiteral("qrc:/main.qml")));
+    oView.setResizeMode(QQuickView::SizeRootObjectToView);
+    oView.setGeometry(QRect(0, 0, 640, 480));
+    QObject::connect(oView.engine(), SIGNAL(quit()), qApp, SLOT(quit()));
+    oView.setTitle("Passwords manager");
+    //oView.setColor();
+
+    qDebug() << sPasswordsFilePath;
+
+    oView.rootContext()->setContextProperty("oClipboard", &oClipboard);
+
     oView.rootContext()->setContextProperty("oPasswordListModel", &oPasswordListModel);
     oView.rootContext()->setContextProperty("oPasswordListSortFilterProxyModel", &oPasswordListSortFilterProxyModel);
 
-    SettingsModel oSettingsModel;
-
-    oSettingsModel.fnSetFilePath(sConfigFilePath);
-
     oView.rootContext()->setContextProperty("oSettingsModel", &oSettingsModel);
     oView.rootContext()->setContextProperty("oWindow", &oView);
+
+    oView.rootContext()->setContextProperty("oStyler", &oStyler);
 
     oView.show();
 

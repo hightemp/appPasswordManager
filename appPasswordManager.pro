@@ -1,4 +1,4 @@
-QT += quick qml websockets
+QT += quick qml websockets quickcontrols2
 CONFIG += c++11
 
 # The following define makes your compiler emit warnings if you use
@@ -17,12 +17,19 @@ SOURCES += main.cpp \
     encrypter.cpp \
     passwordlistmodel.cpp \
     passwordlistsortfilterproxymodel.cpp \
-    settingsmodel.cpp
+    settingsmodel.cpp \
+    styler.cpp
 
-HEADERS += ./*.h \
-    settingsmodel.h
+HEADERS += clipboard.h \
+    encrypter.h \
+    passwordlistmodel.h \
+    passwordlistsortfilterproxymodel.h \
+    settingsmodel.h \
+    styler.h
 
 RESOURCES += qml.qrc
+
+#QT_PLUGIN_PATH="$QT_PLUGIN_PATH:/usr/lib/qt4/plugins/:/usr/lib/kde4/plugins"
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =

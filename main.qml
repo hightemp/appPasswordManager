@@ -53,24 +53,14 @@ Item {
         oSettingsModel.fnSave();
     }
 
-    //Component.onCompleted: {}
-
     function fnStart()
     {
-        if (!oSettingsModel.fnFileExists()) {
-            oSettingsModel.fnSave();
-        }
-
-        oSettingsModel.fnLoad();
-
         oWindow.setX(oSettingsModel.fnGetStringValue("applicationWindow.x"));
         oWindow.setY(oSettingsModel.fnGetStringValue("applicationWindow.y"));
 
         if (!oPasswordListModel.fnFileExists()) {
-            return masterPasswordFirstRunMessageDialog.open();
+            stackView.masterPasswordEnterPageStatusLabelText = "%1 file not found. Will be created new.".arg(oPasswordListModel.fnGetFilePath());
         }
-
-        masterPasswordDialog.open();
     }
 
     WebSocketServer {
@@ -170,7 +160,7 @@ Item {
 
     StackView {
         id: stackView
-        initialItem: passwordsListViewPage
+        initialItem: masterPasswordEnterPage
         anchors.fill: parent
         property var oPasswordsListViewModel
         property int iEditedRecordIndex: -2
@@ -180,10 +170,131 @@ Item {
         property string sAdditional: ""
         property bool settingsPageShowUserInList
         property bool settingsPageShowPasswordInList
+        property var settingsPageStyleModel
+        property int settingsPageStyleCurrentIndex
         property string syncPageServerIP
         property string syncPageSyncMethod
         property string changePasswordPageOldPasswordText: ""
         property string changePasswordPageNewPasswordText: ""
+        property string masterPasswordEnterPageStatusLabelText: ""
+
+        focus: true
+        onCurrentItemChanged: {
+            if (currentItem && currentItem.defaultFocusItem) {
+                currentItem.defaultFocusItem.focus = true
+            }
+        }
+
+        Component {
+            id: masterPasswordEnterPage
+
+            Item {
+                property var defaultFocusItem: masterPasswordField
+                ColumnLayout {
+                    anchors.centerIn: parent
+                    Layout.maximumWidth: 300
+
+                    Label {
+                        text: "Enter master-password"
+                    }
+                    TextField {
+                        id: masterPasswordField
+                        focus: true
+                        selectByMouse: true
+
+                        Layout.minimumWidth: 300
+                        text: ""
+                        echoMode: TextInput.Password
+
+                        Keys.onEnterPressed: {
+                            masterPasswordEnterPageEnterButton.fnEnter();
+                        }
+                        Keys.onReturnPressed: {
+                            masterPasswordEnterPageEnterButton.fnEnter();
+                        }
+                    }
+                    Label {
+                        id: masterPasswordEnterPageStatusLabel
+                        text: stackView.masterPasswordEnterPageStatusLabelText
+                    }
+                }
+
+                RowLayout {
+                    id: masterPasswordEnterPageBottomRowLayout
+
+                    anchors {
+                        right: parent.right
+                        bottom: parent.bottom
+                        left: parent.left
+                    }
+
+                    Button {
+                        id:masterPasswordEnterPageCloseButton
+
+                        Layout.minimumWidth: parent.width/2
+                        text: "Close"
+                        onClicked: {
+                            Qt.quit();
+                        }
+                    }
+
+                    Button {
+                        id: masterPasswordEnterPageEnterButton
+
+                        Layout.minimumWidth: parent.width/2
+                        text: "Enter"
+                        onClicked: fnEnter()
+
+                        function fnEnter() {
+                            Qt.inputMethod.hide();
+
+                            if (masterPasswordField.text.length<8) {
+                                masterPasswordEnterPageStatusLabel.text = "Password must be 8 symbols length minimum";
+                                return;
+                            }
+
+                            oPasswordListModel.fnSetPassword(masterPasswordField.text);
+                            var iLoadResult = oPasswordListModel.fnLoad();
+
+                            if (iLoadResult == 0) {
+                                var iSaveResult = oPasswordListModel.fnSave();
+                            }
+
+                            if (iLoadResult < 0 || iSaveResult<0) {
+                                if (iSaveResult == -1) {
+                                    masterPasswordEnterPageStatusLabel.text = "Can't open file %1 for writing".arg(oPasswordListModel.fnGetFilePath());
+                                }
+                                if (iSaveResult == -10) {
+                                    masterPasswordEnterPageStatusLabel.text = "Key is empty";
+                                }
+                                if (iSaveResult == -20) {
+                                    masterPasswordEnterPageStatusLabel.text = "Encrypted string is empty";
+                                }
+                                if (iLoadResult == -1) {
+                                    masterPasswordEnterPageStatusLabel.text = "Can't open file %1 for reading".arg(oPasswordListModel.fnGetFilePath());
+                                }
+                                if (iLoadResult == -2) {
+                                    masterPasswordEnterPageStatusLabel.text = "Wrong json format in %1".arg(oPasswordListModel.fnGetFilePath());
+                                }
+                                if (iLoadResult == -10) {
+                                    masterPasswordEnterPageStatusLabel.text = "Key is empty";
+                                }
+                                if (iLoadResult == -20) {
+                                    masterPasswordEnterPageStatusLabel.text = "Encrypted string is empty";
+                                }
+                                if (iLoadResult == -30) {
+                                    masterPasswordEnterPageStatusLabel.text = "Can't decrypt passwords file. Master-password is wrong.";
+                                }
+                                return;
+                            }
+
+                            stackView.oPasswordsListViewModel = oPasswordListSortFilterProxyModel;
+                            stackView.push(passwordsListViewPage);
+                        }
+                    }
+                }
+            }
+        }
 
         Component {
             id: passwordsListViewPage
@@ -192,6 +303,7 @@ Item {
                 id: passwordsListViewRectangle
                 //color: "transparent"
                 anchors.fill: parent
+
 
                 ScrollView {
                     id: passwordsListViewScrollView
@@ -220,7 +332,7 @@ Item {
                             width: view.width
                             height: 50
 
-                            Text {
+                            Label {
                                 padding: 10
 
                                 renderType: Text.NativeRendering
@@ -321,6 +433,8 @@ Item {
                             onClicked: {
                                 stackView.settingsPageShowUserInList = oSettingsModel.fnGetBoolValue("settingsPageShowUserInList")
                                 stackView.settingsPageShowPasswordInList = oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList")
+                                stackView.settingsPageStyleCurrentIndex = oSettingsModel.fnGetStringValue("settingsPageStyle")
+                                stackView.settingsPageStyleModel = oStyler.fnGetStylesList()
                                 stackView.push(settingsPage);
                             }
                         }
@@ -533,6 +647,11 @@ Item {
                             text: "Show passwords in list"
                             checked: stackView.settingsPageShowPasswordInList
                         }
+                        ComboBox {
+                            id: settingsPageStyle
+                            model: stackView.settingsPageStyleModel
+                            currentIndex: stackView.settingsPageStyleCurrentIndex
+                        }
                     }
                 }
 
@@ -578,9 +697,11 @@ Item {
                             onClicked: {
                                 oSettingsModel.fnUpdateBoolValue("settingsPageShowUserInList", settingsPageShowUserInList.checked);
                                 oSettingsModel.fnUpdateBoolValue("settingsPageShowPasswordInList", settingsPageShowPasswordsInList.checked);
+                                oSettingsModel.fnUpdateStringValue("settingsPageStyle", settingsPageStyle.currentIndex);
+                                oStyler.fnSetStyle(settingsPageStyle.currentText);
                                 oPasswordListModel.fnUpdate();
                                 oSettingsModel.fnSave();
-                                stackView.pop();
+                                //stackView.pop();
                             }
                         }
                     }
@@ -879,133 +1000,4 @@ Item {
             oPasswordListModel.fnRemoveRow(stackView.iEditedRecordIndex);
         }
     }
-
-    MessageDialog {
-        id: masterPasswordErrorDialog
-        title: "Error"
-        text: ""
-
-        property bool bShowPasswordDialog: false
-
-        onAccepted: {
-            if (bShowPasswordDialog) {
-                masterPasswordDialog.open();
-            }
-        }
-    }
-
-    MessageDialog {
-        id: masterPasswordMessageDialog
-        title: "Password must be 8 symbols length minimum"
-        text: "Password must be 8 symbols length minimum"
-
-        onAccepted: {
-            masterPasswordDialog.open();
-        }
-    }
-
-    MessageDialog {
-        id: masterPasswordFirstRunMessageDialog
-        title: "First run"
-        text: "This is the first launch. Set the master-password to be encrypted file with passwords"
-
-        onAccepted: {
-            masterPasswordDialog.open();
-        }
-    }
-
-    Dialog {
-        id: masterPasswordDialog
-        title: qsTr("Master-password")
-
-        standardButtons: Dialog.Cancel | Dialog.Ok
-
-        onVisibleChanged: {
-            if (!this.visible) {
-                //masterPasswordDialog.visible = true;
-                //return masterPasswordDialog.open();
-            } else {
-                masterPasswordField.text = "";
-                masterPasswordField.focus = masterPasswordDialog.visible;
-            }
-        }
-
-        //onDestroyed: {
-        //    console.log("onDiscard");
-        //}
-
-        onRejected: {
-            Qt.quit();
-        }
-
-        onAccepted: {
-            Qt.inputMethod.hide();
-
-            if (masterPasswordField.text.length<8) {
-                return masterPasswordMessageDialog.open();
-            }
-
-            oPasswordListModel.fnSetPassword(masterPasswordField.text);
-            var iLoadResult = oPasswordListModel.fnLoad();
-
-            if (iLoadResult == 0) {
-                var iSaveResult = oPasswordListModel.fnSave();
-            }
-
-            if (iLoadResult < 0 || iSaveResult<0) {
-                masterPasswordErrorDialog.bShowPasswordDialog = false;
-                if (iSaveResult == -1) {
-                    masterPasswordErrorDialog.text = "Can't open file %1 for writing".arg(oPasswordListModel.fnGetFilePath());
-                }
-                if (iSaveResult == -10) {
-                    masterPasswordErrorDialog.text = "Key is empty";
-                }
-                if (iSaveResult == -20) {
-                    masterPasswordErrorDialog.text = "Encrypted string is empty";
-                }
-                if (iLoadResult == -1) {
-                    masterPasswordErrorDialog.text = "Can't open file %1 for reading".arg(oPasswordListModel.fnGetFilePath());
-                }
-                if (iLoadResult == -2) {
-                    masterPasswordErrorDialog.text = "Wrong json format in %1".arg(oPasswordListModel.fnGetFilePath());
-                }
-                if (iLoadResult == -10) {
-                    masterPasswordErrorDialog.text = "Key is empty";
-                }
-                if (iLoadResult == -20) {
-                    masterPasswordErrorDialog.text = "Encrypted string is empty";
-                }
-                if (iLoadResult == -30) {
-                    masterPasswordErrorDialog.text = "Can't decrypt passwords file. Master-password is wrong.";
-                    masterPasswordErrorDialog.bShowPasswordDialog = true;
-                }
-                masterPasswordErrorDialog.open();
-            }
-
-            stackView.oPasswordsListViewModel = oPasswordListSortFilterProxyModel;
-        }
-
-        TextField {
-            id: masterPasswordField
-            focus: true
-            selectByMouse: true
-            anchors.fill: parent
-            Layout.alignment: Qt.AlignBaseline
-            Layout.fillWidth: true
-            text: ""
-            echoMode: TextInput.Password
-
-            Keys.onEnterPressed: {
-                Qt.inputMethod.hide();
-            }
-            Keys.onReturnPressed: {
-                Qt.inputMethod.hide();
-            }
-        }
-
-        Component.onCompleted: {
-            masterPasswordField.focus = true;
-        }
-   }
-
 }
