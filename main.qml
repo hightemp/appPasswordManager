@@ -101,6 +101,7 @@ Item {
             } else {
                 stackView.settingsPageServerStatusLabelText = "Server status: stoped";
             }
+            console.log(stackView.settingsPageServerStatusLabelText);
         }
     }
 
@@ -185,6 +186,7 @@ Item {
         property int settingsPageStyleCurrentIndex
         property string settingsPageServerHostText
         property string settingsPageServerPortText
+        property string settingsPageServerStatusLabelText
         property string syncPageServerIP
         property string syncPageSyncMethod
         property string changePasswordPageOldPasswordText: ""
@@ -847,7 +849,7 @@ Item {
                             id: syncPageServersListButton
 
                             Layout.fillWidth: true
-                            text: "Sync servers list"
+                            text: "Synchronization servers list"
                             onClicked: {
                                 stackView.push(serversListViewPage);
                             }
@@ -875,6 +877,7 @@ Item {
                             onClicked: {
                                 syncPageBackButton.enabled = false;
                                 syncPageSyncButton.enabled = false;
+                                syncPageServersListButton.enabled = false;
                                 syncPageSyncMethodComboBox.enabled = false
                                 syncPageBusyIndicator.visible = true;
 
@@ -895,13 +898,17 @@ Item {
                                             oServersListModel.fnGetStringValue(iServerIndex, "host", "127.0.0.1")+
                                             ":"+
                                             oServersListModel.fnGetStringValue(iServerIndex, "port", "3002");
+                                    iServerIndex++;
                                     passwordSyncClient.active = true;
+                                } else {
+                                    iServerIndex++;
+                                    settingsPageSyncButtonCallBack();
                                 }
-                                iServerIndex++;
                             }
 
                             function settingsPageSyncButtonErrorCallBack()
                             {
+                                console.log('Error', iServerIndex, iServersCount);
                                 iServerIndex = iServersCount;
                                 settingsPageSyncButtonCallBack();
                             }
@@ -909,10 +916,12 @@ Item {
                             function settingsPageSyncButtonCallBack()
                             {
                                 passwordSyncClient.active = false;
+                                console.log(iServerIndex, iServersCount);
                                 if (iServerIndex >= iServersCount) {
                                     syncPageBusyIndicator.visible = false;
                                     syncPageBackButton.enabled = true;
                                     syncPageSyncButton.enabled = true;
+                                    syncPageServersListButton.enabled = true;
                                     syncPageSyncMethodComboBox.enabled = true;
                                 } else {
                                     fnSyncNext();
@@ -1000,7 +1009,7 @@ Item {
                                     enabled: true
 
                                     text: model.host
-                                    onTextChanged: model.host = text
+                                    onEditingFinished: model.host = text
                                     selectByMouse: true
 
                                     onFocusChanged: {
@@ -1014,7 +1023,7 @@ Item {
 
                                     placeholderText: "3002"
                                     text: model.port
-                                    onTextChanged: model.port = text
+                                    onEditingFinished: model.port = text
                                     selectByMouse: true
 
                                     onFocusChanged: {
