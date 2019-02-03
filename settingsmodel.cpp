@@ -10,14 +10,16 @@ SettingsModel::~SettingsModel()
     delete this->poJsonObject;
 }
 
-void SettingsModel::fnUpdateStringValue(QVariant sName, QVariant oValue)
+void SettingsModel::fnUpdateStringValue(QVariant sName, QVariant oValue, QVariant sDefaultValue)
 {
-    (*this->poJsonObject)[sName.toString()] = oValue.toString();
+    QString sResult = oValue.toString();
+    (*this->poJsonObject)[sName.toString()] = sResult.isEmpty() ? sDefaultValue.toString() : sResult;
 }
 
-QVariant SettingsModel::fnGetStringValue(QVariant sName)
+QVariant SettingsModel::fnGetStringValue(QVariant sName, QVariant sDefaultValue)
 {
-    return (*this->poJsonObject)[sName.toString()].toString();
+    QString sResult = (*this->poJsonObject)[sName.toString()].toString();
+    return sResult.isEmpty() ? sDefaultValue : sResult;
 }
 
 void SettingsModel::fnUpdateBoolValue(QVariant sName, QVariant oValue)
@@ -28,6 +30,16 @@ void SettingsModel::fnUpdateBoolValue(QVariant sName, QVariant oValue)
 QVariant SettingsModel::fnGetBoolValue(QVariant sName)
 {
     return (*this->poJsonObject)[sName.toString()].toBool();
+}
+
+void SettingsModel::fnUpdateJsonArrayValue(QVariant sName, QJsonArray oValue)
+{
+    (*this->poJsonObject)[sName.toString()] = oValue;
+}
+
+QJsonArray SettingsModel::fnGetJsonArrayValue(QVariant sName)
+{
+    return (*this->poJsonObject)[sName.toString()].toArray();
 }
 
 void SettingsModel::fnSetFilePath(QString aFilePath)

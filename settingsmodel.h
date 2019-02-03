@@ -25,10 +25,12 @@ public:
 signals:
 
 public slots:
-    void fnUpdateStringValue(QVariant sName, QVariant oValue);
-    QVariant fnGetStringValue(QVariant sName);
+    void fnUpdateStringValue(QVariant sName, QVariant oValue, QVariant sDefaultValue="");
+    QVariant fnGetStringValue(QVariant sName, QVariant sDefaultValue="");
     void fnUpdateBoolValue(QVariant sName, QVariant oValue);
     QVariant fnGetBoolValue(QVariant sName);
+    void fnUpdateJsonArrayValue(QVariant sName, QJsonArray oValue);
+    QJsonArray fnGetJsonArrayValue(QVariant sName);
     void fnSetFilePath(QString aFilePath);
     QVariant fnGetFilePath();
     QVariant fnLoad();

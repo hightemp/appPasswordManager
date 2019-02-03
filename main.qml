@@ -66,10 +66,10 @@ Item {
     WebSocketServer {
         id: passwordSyncServer
 
-        host: "0.0.0.0"
-        listen: true
+        //host: ""
+        listen: false
         accept: true
-        port: 3002
+        //port: 3002
 
         onClientConnected: {
             webSocket
@@ -92,7 +92,15 @@ Item {
         }
 
         onErrorStringChanged: {
+            stackView.settingsPageServerStatusLabelText = "Server status: Error "+errorString
+        }
 
+        onListenChanged: {
+            if (listen) {
+                stackView.settingsPageServerStatusLabelText = "Server status: listening "+host+":"+port;
+            } else {
+                stackView.settingsPageServerStatusLabelText = "Server status: stoped";
+            }
         }
     }
 
@@ -102,6 +110,8 @@ Item {
         property var fnCallBack
         property var fnErrorCallBack
         property string sStatus: "Status:"
+        property string sHost;
+        property string sPort;
 
         active: false
 
@@ -110,14 +120,14 @@ Item {
                 console.log(message);
                 var iResult = oPasswordListModel.fnFromByteArray(message, {SYNC_0:0, SYNC_1:1, SYNC_2:2}[sCommand]);
                 if (iResult == -3) {
-                    sStatus = "Status: wrong password";
+                    sStatus = "Status: "+sHost+":"+sPort+" - wrong password";
                 }
                 if (iResult == -2 || iResult == -1) {
-                    sStatus = "Status: empty key or string";
+                    sStatus = "Status: "+sHost+":"+sPort+" - empty key or string";
                 }
                 if (iResult == 1) {
                     oPasswordListModel.fnSave();
-                    sStatus = "Status: synchronized";
+                    sStatus = "Status: "+sHost+":"+sPort+" - synchronized";
                 }
                 if (fnCallBack)
                     fnCallBack();
@@ -126,26 +136,26 @@ Item {
 
         onStatusChanged: {
             if (status == WebSocket.Error) {
-                sStatus = qsTr("Client error: %1").arg(errorString);
+                sStatus = "Client error: "+sHost+":"+sPort+" - %1".arg(errorString);
                 if (fnErrorCallBack)
                     fnErrorCallBack();
             } else if (status == WebSocket.Open) {
-                sStatus = "Status: connected";
+                sStatus = "Status: "+sHost+":"+sPort+" - connected";
 
                 sendTextMessage(sCommand);
 
                 if (sCommand == "SYNC_3" || sCommand == "SYNC_4" || sCommand == "SYNC_5") {
                     sendBinaryMessage(oPasswordListModel.fnToByteArray());
-                    sStatus = "Status: synchronized";
+                    sStatus = "Status: "+sHost+":"+sPort+" - synchronized";
                     if (fnCallBack)
                         fnCallBack();
                 }
             } else if (status == WebSocket.Connecting) {
-                sStatus = "Status: connecting..";
+                sStatus = "Status: "+sHost+":"+sPort+" - connecting..";
             }  else if (status == WebSocket.Closing) {
-                //sStatus = "Status: closing connection..";
+                //sStatus = "Status: "+sHost+":"+sPort+" - closing connection..";
             } else if (status == WebSocket.Closed) {
-                //sStatus = "Status: connection closed";
+                //sStatus = "Status: "+sHost+":"+sPort+" - connection closed";
             }
         }
     }
@@ -163,6 +173,7 @@ Item {
         initialItem: masterPasswordEnterPage
         anchors.fill: parent
         property var oPasswordsListViewModel
+        property var oServersListViewModel;
         property int iEditedRecordIndex: -2
         property string sName: ""
         property string sUser: ""
@@ -172,6 +183,8 @@ Item {
         property bool settingsPageShowPasswordInList
         property var settingsPageStyleModel
         property int settingsPageStyleCurrentIndex
+        property string settingsPageServerHostText
+        property string settingsPageServerPortText
         property string syncPageServerIP
         property string syncPageSyncMethod
         property string changePasswordPageOldPasswordText: ""
@@ -289,6 +302,10 @@ Item {
                             }
 
                             stackView.oPasswordsListViewModel = oPasswordListSortFilterProxyModel;
+                            stackView.oServersListViewModel = oServersListModel;
+                            passwordSyncServer.host = oSettingsModel.fnGetStringValue("settingsPageServerHost", "0.0.0.0");
+                            passwordSyncServer.port = oSettingsModel.fnGetStringValue("settingsPageServerPort", "3002");
+                            passwordSyncServer.listen = true;
                             stackView.push(passwordsListViewPage);
                         }
                     }
@@ -334,6 +351,8 @@ Item {
 
                             Label {
                                 padding: 10
+                                anchors.fill: parent
+                                //anchors.centerIn: parent
 
                                 renderType: Text.NativeRendering
                                 text: "<b>"+name+"</b>"+
@@ -431,10 +450,12 @@ Item {
                             Layout.fillWidth: true
 
                             onClicked: {
-                                stackView.settingsPageShowUserInList = oSettingsModel.fnGetBoolValue("settingsPageShowUserInList")
-                                stackView.settingsPageShowPasswordInList = oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList")
-                                stackView.settingsPageStyleCurrentIndex = oSettingsModel.fnGetStringValue("settingsPageStyle")
-                                stackView.settingsPageStyleModel = oStyler.fnGetStylesList()
+                                stackView.settingsPageShowUserInList = oSettingsModel.fnGetBoolValue("settingsPageShowUserInList");
+                                stackView.settingsPageShowPasswordInList = oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList");
+                                stackView.settingsPageStyleCurrentIndex = oSettingsModel.fnGetStringValue("settingsPageStyle");
+                                stackView.settingsPageServerHostText = oSettingsModel.fnGetStringValue("settingsPageServerHost", "0.0.0.0");
+                                stackView.settingsPageServerPortText = oSettingsModel.fnGetStringValue("settingsPageServerPort", "3002");
+                                stackView.settingsPageStyleModel = oStyler.fnGetStylesList();
                                 stackView.push(settingsPage);
                             }
                         }
@@ -654,10 +675,33 @@ Item {
                             text: "Show passwords in list"
                             checked: stackView.settingsPageShowPasswordInList
                         }
+                        Label {
+                            text: "Theme"
+                        }
                         ComboBox {
                             id: settingsPageStyle
                             model: stackView.settingsPageStyleModel
                             currentIndex: stackView.settingsPageStyleCurrentIndex
+                        }
+                        Label {
+                            text: "Web sockets server listen ip"
+                        }
+                        TextField {
+                            id: settingsPageServerHost
+                            placeholderText: "0.0.0.0"
+                            text: stackView.settingsPageServerHostText
+                        }
+                        Label {
+                            text: "Web sockets server listen port"
+                        }
+                        TextField {
+                            id: settingsPageServerPort
+                            placeholderText: "3002"
+                            text: stackView.settingsPageServerPortText
+                        }
+                        Label {
+                            id: settingsPageServerStatusLabel
+                            text: stackView.settingsPageServerStatusLabelText
                         }
                     }
                 }
@@ -705,6 +749,12 @@ Item {
                                 oSettingsModel.fnUpdateBoolValue("settingsPageShowUserInList", settingsPageShowUserInList.checked);
                                 oSettingsModel.fnUpdateBoolValue("settingsPageShowPasswordInList", settingsPageShowPasswordsInList.checked);
                                 oSettingsModel.fnUpdateStringValue("settingsPageStyle", settingsPageStyle.currentIndex);
+                                oSettingsModel.fnUpdateStringValue("settingsPageServerHost", settingsPageServerHost.text);
+                                oSettingsModel.fnUpdateStringValue("settingsPageServerPort", settingsPageServerPort.text);
+                                passwordSyncServer.listen = false;
+                                passwordSyncServer.host = settingsPageServerHost.text;
+                                passwordSyncServer.port = settingsPageServerPort.text;
+                                passwordSyncServer.listen = true;
                                 oStyler.fnSetStyle(settingsPageStyle.currentText);
                                 oPasswordListModel.fnUpdate();
                                 oSettingsModel.fnSave();
@@ -731,7 +781,7 @@ Item {
                         right: parent.right
                         top: parent.top
                         left: parent.left
-                        bottom: syncPageBottomRowLayout.top
+                        bottom: syncPageBottomColumnLayout.top
                     }
 
                     BusyIndicator {
@@ -747,23 +797,6 @@ Item {
 
                         anchors.margins: 10
 
-                        Label {
-                            text: "Server IP"
-                        }
-                        TextField {
-                            id: syncPageServerIPTextField
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignJustify
-
-                            focus: true
-                            text: stackView.syncPageServerIP
-                            selectByMouse: true
-
-                            onEditingFinished: {
-                                oSettingsModel.fnUpdateStringValue("syncPageServerIP", syncPageServerIPTextField.text);
-                                oSettingsModel.fnSave();
-                            }
-                        }
                         Label {
                             text: "Synchronization method"
                         }
@@ -800,8 +833,8 @@ Item {
                     }
                 }
 
-                RowLayout {
-                    id: syncPageBottomRowLayout
+                ColumnLayout {
+                    id: syncPageBottomColumnLayout
 
                     anchors {
                         right: parent.right
@@ -809,51 +842,256 @@ Item {
                         left: parent.left
                     }
 
-                    Button {
-                        id: syncPageBackButton
+                    RowLayout {
+                        Button {
+                            id: syncPageServersListButton
 
-                        Layout.fillWidth: true
-                        text: "Back"
-                        onClicked: {
-                            stackView.pop();
+                            Layout.fillWidth: true
+                            text: "Sync servers list"
+                            onClicked: {
+                                stackView.push(serversListViewPage);
+                            }
                         }
                     }
 
-                    Button {
-                        id: syncPageSyncButton
+                    RowLayout {
+                        Button {
+                            id: syncPageBackButton
 
-                        Layout.fillWidth: true
-                        text: "Sync"
-                        onClicked: {
-                            syncPageBackButton.enabled = false;
-                            syncPageSyncButton.enabled = false;
-                            syncPageServerIPTextField.enabled = false;
-                            syncPageSyncMethodComboBox.enabled = false
-                            syncPageBusyIndicator.visible = true;
-
-                            passwordSyncClient.sCommand = "SYNC_"+oSettingsModel.fnGetStringValue("syncPageSyncMethod");
-                            passwordSyncClient.fnCallBack = this.settingsPageSyncButtonCallBack;
-                            passwordSyncClient.fnErrorCallBack = this.settingsPageSyncButtonErrorCallBack;
-                            passwordSyncClient.url = "ws://"+syncPageServerIPTextField.text+":3002";
-                            passwordSyncClient.active = true;
+                            Layout.fillWidth: true
+                            text: "Back"
+                            onClicked: {
+                                stackView.pop();
+                            }
                         }
 
-                        function settingsPageSyncButtonErrorCallBack()
-                        {
-                            settingsPageSyncButtonCallBack();
-                        }
+                        Button {
+                            id: syncPageSyncButton
+                            property int iServerIndex: 0
+                            property int iServersCount;
 
-                        function settingsPageSyncButtonCallBack()
-                        {
-                            syncPageBusyIndicator.visible = false;
-                            syncPageBackButton.enabled = true;
-                            syncPageSyncButton.enabled = true;
-                            syncPageServerIPTextField.enabled = true;
-                            syncPageSyncMethodComboBox.enabled = true
-                            passwordSyncClient.active = false;
+                            Layout.fillWidth: true
+                            text: "Sync"
+                            onClicked: {
+                                syncPageBackButton.enabled = false;
+                                syncPageSyncButton.enabled = false;
+                                syncPageSyncMethodComboBox.enabled = false
+                                syncPageBusyIndicator.visible = true;
+
+                                iServerIndex = 0;
+                                iServersCount = oServersListModel.fnSize();
+                                fnSyncNext();
+                            }
+
+                            function fnSyncNext()
+                            {
+                                if (oServersListModel.fnGetBoolValue(iServerIndex, "isEnabled")) {
+                                    passwordSyncClient.sCommand = "SYNC_"+oSettingsModel.fnGetStringValue("syncPageSyncMethod");
+                                    passwordSyncClient.fnCallBack = this.settingsPageSyncButtonCallBack;
+                                    passwordSyncClient.fnErrorCallBack = this.settingsPageSyncButtonErrorCallBack;
+                                    passwordSyncClient.sHost = oServersListModel.fnGetStringValue(iServerIndex, "host", "127.0.0.1");
+                                    passwordSyncClient.sPort = oServersListModel.fnGetStringValue(iServerIndex, "port", "3002");
+                                    passwordSyncClient.url = "ws://"+
+                                            oServersListModel.fnGetStringValue(iServerIndex, "host", "127.0.0.1")+
+                                            ":"+
+                                            oServersListModel.fnGetStringValue(iServerIndex, "port", "3002");
+                                    passwordSyncClient.active = true;
+                                }
+                                iServerIndex++;
+                            }
+
+                            function settingsPageSyncButtonErrorCallBack()
+                            {
+                                iServerIndex = iServersCount;
+                                settingsPageSyncButtonCallBack();
+                            }
+
+                            function settingsPageSyncButtonCallBack()
+                            {
+                                passwordSyncClient.active = false;
+                                if (iServerIndex >= iServersCount) {
+                                    syncPageBusyIndicator.visible = false;
+                                    syncPageBackButton.enabled = true;
+                                    syncPageSyncButton.enabled = true;
+                                    syncPageSyncMethodComboBox.enabled = true;
+                                } else {
+                                    fnSyncNext();
+                                }
+                            }
                         }
                     }
                 }
+
+
+            }
+        }
+
+        Component {
+            id: serversListViewPage
+
+            Item {
+                id: serversListViewPageRectangle
+                //color: "transparent"
+                anchors.fill: parent
+
+
+                ScrollView {
+                    id: serversListViewPageScrollView
+                    anchors {
+                        right: parent.right
+                        top: parent.top
+                        left: parent.left
+                        bottom: serversListViewPageBottomColumnLayout.top
+                    }
+                    ListView {
+                        id: serversListView
+                        width: parent.width
+                        //orientation: ListView.Vertical
+                        model: stackView.oServersListViewModel
+                        focus: true
+
+                        highlight: Rectangle {
+                            color: "skyblue"
+                        }
+
+                        highlightFollowsCurrentItem: true
+
+                        delegate: Item {
+                            id: serversListDelegate
+
+                            property var serversListDelegateView: ListView.view
+                            property bool serversListDelegateIsCurrent: ListView.isCurrentItem
+
+                            width: serversListDelegateView.width
+                            height: 60
+
+                            function fnServersListViewSelectCurrentItem()
+                            {
+                                serversListDelegateView.currentIndex = model.index;
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                z: RowLayout.z-1
+
+                                onClicked: {
+                                    fnServersListViewSelectCurrentItem();
+                                }
+                            }
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.margins: 10
+
+                                CheckBox {
+                                    id: serversListDelegateIsEnabled
+                                    checked: model.isEnabled
+
+                                    onCheckStateChanged: model.isEnabled = checked
+
+                                    onClicked: {
+                                        fnServersListViewSelectCurrentItem();
+                                    }
+                                }
+                                TextField {
+                                    id: serversListDelegateServerHost
+                                    placeholderText: "127.0.0.1"
+                                    Layout.fillWidth: true
+                                    enabled: true
+
+                                    text: model.host
+                                    onTextChanged: model.host = text
+                                    selectByMouse: true
+
+                                    onFocusChanged: {
+                                        if (focus) {
+                                            fnServersListViewSelectCurrentItem();
+                                        }
+                                    }
+                                }
+                                TextField {
+                                    id: serversListDelegateServerPort
+
+                                    placeholderText: "3002"
+                                    text: model.port
+                                    onTextChanged: model.port = text
+                                    selectByMouse: true
+
+                                    onFocusChanged: {
+                                        if (focus) {
+                                            fnServersListViewSelectCurrentItem();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+                ColumnLayout {
+                    id: serversListViewPageBottomColumnLayout
+
+                    anchors {
+                        right: parent.right
+                        bottom: parent.bottom
+                        left: parent.left
+                    }
+
+                    RowLayout {
+                        Layout.fillHeight: true
+
+                        Button {
+                            id: serversListViewPageAddButton
+                            //Layout.minimumWidth: (parent.width-20)/2 + 1
+                            text: "Add"
+                            Layout.fillWidth: true
+
+                            onClicked: {
+                                oServersListModel.fnAddRow();
+                            }
+                        }
+
+                        Button {
+                            id: serversListViewPageDeleteButton
+                            //Layout.minimumWidth: (parent.width-20)/2 + 1
+                            text: "Delete"
+                            Layout.fillWidth: true
+
+                            onClicked: {
+                                oServersListModel.fnRemoveRow(serversListView.currentIndex);
+                            }
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillHeight: true
+
+                        Button {
+                            id: serversListViewPageBackButton
+                            //Layout.minimumWidth: (parent.width-20)/2 + 1
+                            text: "Back"
+                            Layout.fillWidth: true
+
+                            onClicked: {
+                                stackView.pop();
+                            }
+                        }
+
+                        Button {
+                            id: serversListViewPageSaveButton
+                            //Layout.minimumWidth: (parent.width-20)/2 + 1
+                            text: "Save"
+                            Layout.fillWidth: true
+
+                            onClicked: {
+                                oServersListModel.fnSave();
+                            }
+                        }
+                    }
+
+                }
+
             }
         }
 

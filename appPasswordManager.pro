@@ -18,6 +18,7 @@ SOURCES += main.cpp \
     passwordlistmodel.cpp \
     passwordlistsortfilterproxymodel.cpp \
     settingsmodel.cpp \
+    serverslistmodel.cpp \
     styler.cpp
 
 HEADERS += clipboard.h \
@@ -25,6 +26,7 @@ HEADERS += clipboard.h \
     passwordlistmodel.h \
     passwordlistsortfilterproxymodel.h \
     settingsmodel.h \
+    serverslistmodel.h \
     styler.h
 
 RESOURCES += qml.qrc

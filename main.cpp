@@ -9,7 +9,7 @@
 #include "settingsmodel.h"
 #include "clipboard.h"
 #include "styler.h"
-#include <QPalette>
+#include "serverslistmodel.h"
 
 int main(int argc, char *argv[])
 {
@@ -46,6 +46,8 @@ int main(int argc, char *argv[])
 
     oSettingsModel.fnLoad();
 
+    ServersListModel oServersListModel(&oSettingsModel);
+
     Styler oStyler;
 
     qDebug() << oSettingsModel.fnGetStringValue("settingsPageStyle");
@@ -77,6 +79,7 @@ int main(int argc, char *argv[])
     oView.rootContext()->setContextProperty("oPasswordListSortFilterProxyModel", &oPasswordListSortFilterProxyModel);
 
     oView.rootContext()->setContextProperty("oSettingsModel", &oSettingsModel);
+    oView.rootContext()->setContextProperty("oServersListModel", &oServersListModel);
     oView.rootContext()->setContextProperty("oWindow", &oView);
 
     oView.rootContext()->setContextProperty("oStyler", &oStyler);
