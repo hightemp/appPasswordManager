@@ -39,7 +39,6 @@ public:
     bool setData(const QModelIndex &oIndex, const QVariant &oValue, int iRole = Qt::EditRole) override;
     QVariant headerData(int iSection, Qt::Orientation oOrientation, int iRole = Qt::DisplayRole) const override;
     Qt::ItemFlags flags(const QModelIndex &oIndex) const override;
-    QString fnGenerateIndex();
     bool insertRows(int iPosition, int iRows, const QModelIndex &oParent = QModelIndex()) override;
     bool removeRows(int iPosition, int iRows, const QModelIndex &oParent = QModelIndex()) override;
     QModelIndex index(int iRow, int iColumn, const QModelIndex &oParent = QModelIndex()) const override;
@@ -49,6 +48,7 @@ public:
     bool hasChildren(const QModelIndex &oParent) const override;
 
 public slots:
+    QString fnGenerateIndex(int iLength=10);
     void fnSetFilePath(QString aFilePath);
     QVariant fnGetFilePath();
     void fnSetPassword(QString sPassword);

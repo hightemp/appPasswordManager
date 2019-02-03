@@ -521,11 +521,18 @@ Item {
 
                             TextField {
                                 id: passwordTextField
-                                Layout.minimumWidth: passwordEditPageScrollView.width-passwordEditPageCopyPasswordButton.width-25
+                                Layout.minimumWidth: passwordEditPageScrollView.width-passwordEditPageGeneratePasswordButton.width-passwordEditPageCopyPasswordButton.width-25
                                 text: stackView.sPassword
                                 selectByMouse: true
                             }
 
+                            Button {
+                                id: passwordEditPageGeneratePasswordButton
+                                text: "Generate"
+                                onClicked: {
+                                    passwordTextField.text = oPasswordListModel.fnGenerateIndex();
+                                }
+                            }
                             Button {
                                 id: passwordEditPageCopyPasswordButton
                                 text: "Copy"

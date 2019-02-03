@@ -111,7 +111,7 @@ Qt::ItemFlags PasswordListModel::flags(const QModelIndex &oIndex) const
     return QAbstractItemModel::flags(oIndex) | Qt::ItemIsEditable;
 }
 
-QString PasswordListModel::fnGenerateIndex()
+QString PasswordListModel::fnGenerateIndex(int iLength)
 {
     static QVector<QString> oLettersVector;
     QString sResult = "";
@@ -127,7 +127,7 @@ QString PasswordListModel::fnGenerateIndex()
 
     qsrand((unsigned int) time(NULL));
 
-    for (int iIndex=0; iIndex<10; iIndex++) {
+    for (int iIndex=0; iIndex<iLength; iIndex++) {
         sResult.append(oLettersVector[qrand() % oLettersVector.length()]);
     }
 
