@@ -3,7 +3,7 @@ import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
 import Qt.labs.platform 1.0
 import QtQuick.Dialogs 1.2
-import QtQuick.Window 2.12
+import QtQuick.Window 2.0
 import QtWebSockets 1.1
 import PasswordListModel 1.0
 
