@@ -2,16 +2,18 @@
 #include "passwordlistmodel.h"
 #include <QDebug>
 
-PasswordListSortFilterProxyModel::PasswordListSortFilterProxyModel()
-{
-
-}
-
 bool PasswordListSortFilterProxyModel::filterAcceptsRow(int iSourceRow, const QModelIndex &oSourceParent) const
 {
-    qDebug() << __FUNCTION__;
+    qDebug() << __FUNCTION__ << this->filterRegExp();
 
-    QModelIndex iIndex = sourceModel()->index(iSourceRow, 0, oSourceParent);
+    QModelIndex iIndex = this->sourceModel()->index(iSourceRow, 0, oSourceParent);
 
-    return !sourceModel()->data(iIndex, PasswordListModel::DeletedRole).toBool();
+    return !this->sourceModel()->data(iIndex, PasswordListModel::IsDeletedRole).toBool()
+            && (
+                this->sourceModel()->data(iIndex, PasswordListModel::NameRole).toString().contains(this->filterRegExp())
+                || this->sourceModel()->data(iIndex, PasswordListModel::UserRole).toString().contains(this->filterRegExp())
+                || this->sourceModel()->data(iIndex, PasswordListModel::PasswordRole).toString().contains(this->filterRegExp())
+                || this->sourceModel()->data(iIndex, PasswordListModel::AdditionalRole).toString().contains(this->filterRegExp())
+            );
 }
+

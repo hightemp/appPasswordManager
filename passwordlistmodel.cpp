@@ -20,9 +20,10 @@ QHash<int,QByteArray> PasswordListModel::roleNames() const
         { NameRole, "name" },
         { UserRole, "user" },
         { PasswordRole, "password" },
-        { DeletedRole, "deleted" },
+        { IsDeletedRole, "isDeleted" },
         { AdditionalRole, "additional" },
-        { IDRole, "id" }
+        { IDRole, "id" },
+        { SourceIndexRole, "sourceIndex" }
     };
 }
 
@@ -44,12 +45,14 @@ QVariant PasswordListModel::data(const QModelIndex &oIndex, int iRole) const
         return oJsonObject["user"].toString();
     } if (iRole == PasswordRole) {
         return oJsonObject["password"].toString();
-    } if (iRole == DeletedRole) {
-        return oJsonObject["deleted"].toBool();
+    } if (iRole == IsDeletedRole) {
+        return oJsonObject["isDeleted"].toBool();
     } if (iRole == AdditionalRole) {
         return oJsonObject["additional"].toString();
     } if (iRole == IDRole) {
         return oJsonObject["id"].toString();
+    } if (iRole == SourceIndexRole) {
+        return oIndex.row();
     } else
         return QVariant();
 }
@@ -153,13 +156,14 @@ bool PasswordListModel::insertRows(int iPosition, int iRows, const QModelIndex &
 
 bool PasswordListModel::removeRows(int iPosition, int iRows, const QModelIndex &oParent)
 {
-    qDebug() << __FUNCTION__;
+    qDebug() << __FUNCTION__ << "iPosition:" << iPosition << "iRows:" << iRows << oParent;
     beginRemoveRows(QModelIndex(), iPosition, iPosition+iRows-1);
 
     for (int iRow = iPosition; iRow < iPosition+iRows; ++iRow) {
         //this->poJsonArray->removeAt(iPosition);
         QJsonObject oJsonObject = this->poJsonArray->at(iRow).toObject();
-        oJsonObject["deleted"] = true;
+        qDebug() << oJsonObject;
+        oJsonObject["isDeleted"] = true;
         this->poJsonArray->replace(iRow, QJsonValue(oJsonObject));
     }
 
@@ -312,11 +316,13 @@ bool PasswordListModel::fnFileExists()
 
 void PasswordListModel::fnRemoveRow(int iIndex)
 {
+    qDebug() << __FUNCTION__ << iIndex;
     this->removeRows(iIndex, 1);
 }
 
 QVariant PasswordListModel::fnAddRow()
 {
+    qDebug() << __FUNCTION__;
     this->insertRows(this->poJsonArray->size(), 1);
 
     return this->poJsonArray->size()-1;
@@ -324,11 +330,13 @@ QVariant PasswordListModel::fnAddRow()
 
 QVariant PasswordListModel::fnSize()
 {
+    qDebug() << __FUNCTION__;
     return this->poJsonArray->size();
 }
 
 QVariant PasswordListModel::fnToByteArray()
 {
+    qDebug() << __FUNCTION__;
     QJsonDocument oJsonDocument(*this->poJsonArray);
 
     Encrypter oEncrypter;
@@ -341,6 +349,7 @@ QVariant PasswordListModel::fnToByteArray()
 
 QVariant PasswordListModel::fnFromByteArray(QVariant oByteArray, QVariant iSyncMethod)
 {
+    qDebug() << __FUNCTION__;
     beginResetModel();
 
     Encrypter oEncrypter;
@@ -362,12 +371,21 @@ QVariant PasswordListModel::fnFromByteArray(QVariant oByteArray, QVariant iSyncM
         for (int iRemoteIndex=0; iRemoteIndex<oRemoteJsonArray.size(); iRemoteIndex++) {
             QJsonObject oRemoteJsonObject = oRemoteJsonArray[iRemoteIndex].toObject();
 
+            if (oRemoteJsonObject["isDeleted"].toBool()) {
+                continue;
+            }
+
             bool bFound = false;
 
             if (this->poJsonArray->size()>0) {
                 for (int iLocalIndex=0; iLocalIndex<this->poJsonArray->size(); iLocalIndex++) {
                     qDebug() << oRemoteJsonObject << (*this->poJsonArray)[iLocalIndex].toObject() << (oRemoteJsonObject["id"] != (*this->poJsonArray)[iLocalIndex].toObject()["id"]);
                     QJsonObject oLocalJsonObject = (*this->poJsonArray)[iLocalIndex].toObject();
+
+                    if (oLocalJsonObject["isDeleted"].toBool()) {
+                        continue;
+                    }
+
                     if (oRemoteJsonObject["id"] == oLocalJsonObject["id"]) {
                         bFound = true;
                         if (iSyncMethod.toInt() == 1) {

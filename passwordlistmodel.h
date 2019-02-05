@@ -26,9 +26,10 @@ public:
         NameRole = Qt::UserRole + 1,
         UserRole,
         PasswordRole,
-        DeletedRole,
+        IsDeletedRole,
         AdditionalRole,
-        IDRole
+        IDRole,
+        SourceIndexRole
     };
 
     explicit PasswordListModel(QObject *poParent = nullptr);

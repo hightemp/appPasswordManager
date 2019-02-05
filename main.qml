@@ -175,7 +175,8 @@ Item {
         anchors.fill: parent
         property var oPasswordsListViewModel
         property var oServersListViewModel;
-        property int iEditedRecordIndex: -2
+        property int iEditedRecordIndex
+        property bool bPasswordsListIsNewItem: false
         property string sName: ""
         property string sUser: ""
         property string sPassword: ""
@@ -321,17 +322,34 @@ Item {
             Item {
                 id: passwordsListViewRectangle
                 //color: "transparent"
-                anchors.fill: parent
 
+                TextField {
+                    id: passwordsListViewPageFilterTextField
+
+                    anchors {
+                        right: parent.right
+                        top: parent.top
+                        left: parent.left
+                    }
+
+                    selectByMouse: true
+                    placeholderText: "Filter.."
+
+                    onTextChanged: {
+                        //oPasswordListSortFilterProxyModel.fnSetFilterFixedString(text);
+                        oPasswordListSortFilterProxyModel.setFilterFixedString(text);
+                    }
+                }
 
                 ScrollView {
                     id: passwordsListViewScrollView
                     anchors {
                         right: parent.right
-                        top: parent.top
+                        top: passwordsListViewPageFilterTextField.bottom
                         left: parent.left
                         bottom: passwordsListViewPageBottomColumnLayout.top
                     }
+
                     ListView {
                         id: passwordsListView
                         width: parent.width
@@ -339,9 +357,14 @@ Item {
                         model: stackView.oPasswordsListViewModel
                         focus: true
                         highlight: Rectangle {
+                            opacity: 0.5
                             color: "skyblue"
                         }
                         highlightFollowsCurrentItem: true
+                        onCurrentIndexChanged: {
+                            console.log('onCurrentIndexChanged');
+                            stackView.iEditedRecordIndex = currentIndex;
+                        }
                         delegate: Item {
                             id: passwordsListDelegate
 
@@ -377,11 +400,12 @@ Item {
                                     stackView.sUser = model.user;
                                     stackView.sPassword = model.password;
                                     stackView.sAdditional = model.additional;
-                                    stackView.iEditedRecordIndex = model.index;
+                                    stackView.iEditedRecordIndex = model.sourceIndex;
+                                    stackView.bPasswordsListIsNewItem = false;
 
                                     stackView.push(passwordEditPage);
                                 }
-                            }
+                            }                            
                         }
                     }
 
@@ -406,7 +430,8 @@ Item {
                             Layout.fillWidth: true
 
                             onClicked: {
-                                stackView.iEditedRecordIndex = -1;
+                                //stackView.iEditedRecordIndex = -1;
+                                stackView.bPasswordsListIsNewItem = true;
                                 stackView.sName = "";
                                 stackView.sUser = "";
                                 stackView.sPassword = "";
@@ -626,11 +651,10 @@ Item {
                         Layout.minimumWidth: parent.width/2
                         text: "Save"
                         onClicked: {
-                            if (stackView.iEditedRecordIndex == -1) {
+                            if (stackView.bPasswordsListIsNewItem) {
                                 stackView.iEditedRecordIndex = oPasswordListModel.fnAddRow();
-                            }
-
-                            if (stackView.iEditedRecordIndex > -1) {
+                            } else {
+                                console.log('stackView.iEditedRecordIndex', stackView.iEditedRecordIndex);
                                 var oIndex = oPasswordListModel.index(stackView.iEditedRecordIndex, 0);
                                 oPasswordListModel.setData(oIndex, nameTextField.text, PasswordListModel.NameRole);
                                 oPasswordListModel.setData(oIndex, userTextField.text, PasswordListModel.UserRole);
