@@ -59,7 +59,7 @@ Item {
         oWindow.setY(oSettingsModel.fnGetStringValue("applicationWindow.y"));
 
         if (!oPasswordListModel.fnFileExists()) {
-            stackView.masterPasswordEnterPageStatusLabelText = "%1 file not found. Will be created new.".arg(oPasswordListModel.fnGetFilePath());
+            stackView.masterPasswordEnterPageStatusLabelText = "File with passwords not found.<br> Will be created new.";
         }
     }
 
@@ -231,6 +231,8 @@ Item {
                     }
                     Label {
                         id: masterPasswordEnterPageStatusLabel
+                        Layout.maximumWidth: 300
+                        wrapMode: "WordWrap"
                         text: stackView.masterPasswordEnterPageStatusLabelText
                     }
                 }
@@ -479,7 +481,7 @@ Item {
                             onClicked: {
                                 stackView.settingsPageShowUserInList = oSettingsModel.fnGetBoolValue("settingsPageShowUserInList");
                                 stackView.settingsPageShowPasswordInList = oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList");
-                                stackView.settingsPageStyleCurrentIndex = oSettingsModel.fnGetStringValue("settingsPageStyle");
+                                stackView.settingsPageStyleCurrentIndex = oSettingsModel.fnGetIntValue("settingsPageStyle");
                                 stackView.settingsPageServerHostText = oSettingsModel.fnGetStringValue("settingsPageServerHost", "0.0.0.0");
                                 stackView.settingsPageServerPortText = oSettingsModel.fnGetStringValue("settingsPageServerPort", "3002");
                                 stackView.settingsPageStyleModel = oStyler.fnGetStylesList();
@@ -570,6 +572,7 @@ Item {
                             TextField {
                                 id: passwordTextField
                                 Layout.minimumWidth: passwordEditPageScrollView.width-passwordEditPageGeneratePasswordButton.width-passwordEditPageCopyPasswordButton.width-25
+                                width: passwordEditPageScrollView.width-passwordEditPageGeneratePasswordButton.width-passwordEditPageCopyPasswordButton.width-25
                                 text: stackView.sPassword
                                 selectByMouse: true
                             }
@@ -653,14 +656,15 @@ Item {
                         onClicked: {
                             if (stackView.bPasswordsListIsNewItem) {
                                 stackView.iEditedRecordIndex = oPasswordListModel.fnAddRow();
-                            } else {
-                                console.log('stackView.iEditedRecordIndex', stackView.iEditedRecordIndex);
-                                var oIndex = oPasswordListModel.index(stackView.iEditedRecordIndex, 0);
-                                oPasswordListModel.setData(oIndex, nameTextField.text, PasswordListModel.NameRole);
-                                oPasswordListModel.setData(oIndex, userTextField.text, PasswordListModel.UserRole);
-                                oPasswordListModel.setData(oIndex, passwordTextField.text, PasswordListModel.PasswordRole);
-                                oPasswordListModel.setData(oIndex, additionalTextArea.text, PasswordListModel.AdditionalRole);
                             }
+
+                            console.log('stackView.iEditedRecordIndex', stackView.iEditedRecordIndex);
+                            var oIndex = oPasswordListModel.index(stackView.iEditedRecordIndex, 0);
+                            oPasswordListModel.setData(oIndex, nameTextField.text, PasswordListModel.NameRole);
+                            oPasswordListModel.setData(oIndex, userTextField.text, PasswordListModel.UserRole);
+                            oPasswordListModel.setData(oIndex, passwordTextField.text, PasswordListModel.PasswordRole);
+                            oPasswordListModel.setData(oIndex, additionalTextArea.text, PasswordListModel.AdditionalRole);
+
 
                             stackView.pop();
                         }
@@ -774,7 +778,7 @@ Item {
                             onClicked: {
                                 oSettingsModel.fnUpdateBoolValue("settingsPageShowUserInList", settingsPageShowUserInList.checked);
                                 oSettingsModel.fnUpdateBoolValue("settingsPageShowPasswordInList", settingsPageShowPasswordsInList.checked);
-                                oSettingsModel.fnUpdateStringValue("settingsPageStyle", settingsPageStyle.currentIndex);
+                                oSettingsModel.fnUpdateIntValue("settingsPageStyle", settingsPageStyle.currentIndex);
                                 oSettingsModel.fnUpdateStringValue("settingsPageServerHost", settingsPageServerHost.text);
                                 oSettingsModel.fnUpdateStringValue("settingsPageServerPort", settingsPageServerPort.text);
                                 passwordSyncServer.listen = false;
@@ -1049,6 +1053,9 @@ Item {
                                     text: model.port
                                     onEditingFinished: model.port = text
                                     selectByMouse: true
+
+                                    Layout.minimumWidth: 50
+                                    width: 50
 
                                     onFocusChanged: {
                                         if (focus) {

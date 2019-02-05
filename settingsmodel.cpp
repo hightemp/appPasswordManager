@@ -22,6 +22,16 @@ QVariant SettingsModel::fnGetStringValue(QVariant sName, QVariant sDefaultValue)
     return sResult.isEmpty() ? sDefaultValue : sResult;
 }
 
+void SettingsModel::fnUpdateIntValue(QVariant sName, QVariant oValue, QVariant sDefaultValue)
+{
+    (*this->poJsonObject)[sName.toString()] = oValue.isNull() && !sDefaultValue.isNull() ? sDefaultValue.toInt() : oValue.toInt();
+}
+
+QVariant SettingsModel::fnGetIntValue(QVariant sName)
+{
+    return (*this->poJsonObject)[sName.toString()].toInt();
+}
+
 void SettingsModel::fnUpdateBoolValue(QVariant sName, QVariant oValue)
 {
     (*this->poJsonObject)[sName.toString()] = oValue.toBool();

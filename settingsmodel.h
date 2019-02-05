@@ -27,6 +27,8 @@ signals:
 public slots:
     void fnUpdateStringValue(QVariant sName, QVariant oValue, QVariant sDefaultValue="");
     QVariant fnGetStringValue(QVariant sName, QVariant sDefaultValue="");
+    void fnUpdateIntValue(QVariant sName, QVariant oValue, QVariant sDefaultValue=0);
+    QVariant fnGetIntValue(QVariant sName);
     void fnUpdateBoolValue(QVariant sName, QVariant oValue);
     QVariant fnGetBoolValue(QVariant sName);
     void fnUpdateJsonArrayValue(QVariant sName, QJsonArray oValue);
