@@ -571,8 +571,9 @@ Item {
 
                             TextField {
                                 id: passwordTextField
-                                Layout.minimumWidth: passwordEditPageScrollView.width-passwordEditPageGeneratePasswordButton.width-passwordEditPageCopyPasswordButton.width-25
-                                width: passwordEditPageScrollView.width-passwordEditPageGeneratePasswordButton.width-passwordEditPageCopyPasswordButton.width-25
+                                //Layout.minimumWidth: passwordEditPageScrollView.width-passwordEditPageGeneratePasswordButton.width-passwordEditPageCopyPasswordButton.width-25
+                                //width: passwordEditPageScrollView.width-passwordEditPageGeneratePasswordButton.width-passwordEditPageCopyPasswordButton.width-25
+                                Layout.fillWidth: true
                                 text: stackView.sPassword
                                 selectByMouse: true
                             }
@@ -1033,7 +1034,6 @@ Item {
                                 TextField {
                                     id: serversListDelegateServerHost
                                     placeholderText: "127.0.0.1"
-                                    Layout.fillWidth: true
                                     enabled: true
 
                                     text: model.host
@@ -1054,8 +1054,7 @@ Item {
                                     onEditingFinished: model.port = text
                                     selectByMouse: true
 
-                                    Layout.minimumWidth: 50
-                                    width: 50
+                                    Layout.fillWidth: true
 
                                     onFocusChanged: {
                                         if (focus) {
