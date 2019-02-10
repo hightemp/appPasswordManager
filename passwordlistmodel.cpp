@@ -23,7 +23,9 @@ QHash<int,QByteArray> PasswordListModel::roleNames() const
         { IsDeletedRole, "isDeleted" },
         { AdditionalRole, "additional" },
         { IDRole, "id" },
-        { SourceIndexRole, "sourceIndex" }
+        { SourceIndexRole, "sourceIndex" },
+        { CreatedAtRole, "createdAt" },
+        { UpdatedAtRole, "updatedAt" }
     };
 }
 
@@ -53,6 +55,10 @@ QVariant PasswordListModel::data(const QModelIndex &oIndex, int iRole) const
         return oJsonObject["id"].toString();
     } if (iRole == SourceIndexRole) {
         return oIndex.row();
+    } if (iRole == CreatedAtRole) {
+        return oJsonObject["createdAt"].toString();
+    } if (iRole == UpdatedAtRole) {
+        return oJsonObject["updatedAt"].toString();
     } else
         return QVariant();
 }
@@ -78,6 +84,7 @@ bool PasswordListModel::setData(const QModelIndex &oIndex, const QVariant &oValu
             if (iRole == IDRole) {
                 oJsonObject["id"] = oValue.toString();
             }
+            oJsonObject["updatedAt"] = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss");
             QJsonValue oJsonValue(oJsonObject);
             this->poJsonArray->replace(oIndex.row(), oJsonValue);
         }
@@ -145,6 +152,7 @@ bool PasswordListModel::insertRows(int iPosition, int iRows, const QModelIndex &
     for (int iRow = 0; iRow < iRows; ++iRow) {
         QJsonObject oJsonObject;
         oJsonObject["id"] = this->fnGenerateIndex();
+        oJsonObject["createdAt"] = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss");
         QJsonValue oJsonValue(oJsonObject);
         this->poJsonArray->insert(iPosition, oJsonValue);
     }

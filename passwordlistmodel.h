@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QJsonDocument>
+#include <QDateTime>
 
 class PasswordListModel : public QAbstractListModel
 {
@@ -29,7 +30,9 @@ public:
         IsDeletedRole,
         AdditionalRole,
         IDRole,
-        SourceIndexRole
+        SourceIndexRole,
+        CreatedAtRole,
+        UpdatedAtRole
     };
 
     explicit PasswordListModel(QObject *poParent = nullptr);

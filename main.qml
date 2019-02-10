@@ -137,9 +137,9 @@ Item {
 
         onStatusChanged: {
             if (status == WebSocket.Error) {
-                sStatus = "Client error: "+sHost+":"+sPort+" - %1".arg(errorString);
+                sStatus = "Error";//"Client error: "+sHost+":"+sPort+" - %1".arg(errorString);
                 if (fnErrorCallBack)
-                    fnErrorCallBack();
+                    fnErrorCallBack("Client error: "+sHost+":"+sPort+" - %1".arg(errorString));
             } else if (status == WebSocket.Open) {
                 sStatus = "Status: "+sHost+":"+sPort+" - connected";
 
@@ -174,15 +174,18 @@ Item {
         initialItem: masterPasswordEnterPage
         anchors.fill: parent
         property var oPasswordsListViewModel
-        property var oServersListViewModel;
+        property var oServersListViewModel
         property int iEditedRecordIndex
         property bool bPasswordsListIsNewItem: false
         property string sName: ""
         property string sUser: ""
         property string sPassword: ""
         property string sAdditional: ""
+        property bool settingsPageSynchronizeOnUpdate
         property bool settingsPageShowUserInList
         property bool settingsPageShowPasswordInList
+        property bool settingsPageShowCreatedAtInList
+        property bool settingsPageShowUpdatedAtInList
         property var settingsPageStyleModel
         property int settingsPageStyleCurrentIndex
         property string settingsPageServerHostText
@@ -382,7 +385,9 @@ Item {
                                 //anchors.centerIn: parent
 
                                 renderType: Text.NativeRendering
-                                text: "<b>"+name+"</b>"+
+                                text: (oSettingsModel.fnGetBoolValue("settingsPageShowCreatedAtInList") ? "Created: " + createdAt + " " : "") +
+                                      (oSettingsModel.fnGetBoolValue("settingsPageShowUpdatedAtInList") ? "Updated: " + updatedAt + " " : "") +
+                                      "<b>"+name+"</b>"+
                                       (oSettingsModel.fnGetBoolValue("settingsPageShowUserInList") ||
                                        oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList") ? "<br>" : "" ) +
                                       (oSettingsModel.fnGetBoolValue("settingsPageShowUserInList") ? "<b>User:</b> "+user : "") +
@@ -479,6 +484,9 @@ Item {
                             Layout.fillWidth: true
 
                             onClicked: {
+                                stackView.settingsPageSynchronizeOnUpdate = oSettingsModel.fnGetBoolValue("settingsPageSynchronizeOnUpdate");
+                                stackView.settingsPageShowCreatedAtInList = oSettingsModel.fnGetBoolValue("settingsPageShowCreatedAtInList");
+                                stackView.settingsPageShowUpdatedAtInList = oSettingsModel.fnGetBoolValue("settingsPageShowUpdatedAtInList");
                                 stackView.settingsPageShowUserInList = oSettingsModel.fnGetBoolValue("settingsPageShowUserInList");
                                 stackView.settingsPageShowPasswordInList = oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList");
                                 stackView.settingsPageStyleCurrentIndex = oSettingsModel.fnGetIntValue("settingsPageStyle");
@@ -571,10 +579,32 @@ Item {
 
                             TextField {
                                 id: passwordTextField
-                                //Layout.minimumWidth: passwordEditPageScrollView.width-passwordEditPageGeneratePasswordButton.width-passwordEditPageCopyPasswordButton.width-25
-                                //width: passwordEditPageScrollView.width-passwordEditPageGeneratePasswordButton.width-passwordEditPageCopyPasswordButton.width-25
                                 Layout.fillWidth: true
                                 text: stackView.sPassword
+                                selectByMouse: true
+                            }
+
+                            Button {
+                                id: passwordEditPageCopyPasswordButton
+                                text: "Copy"
+                                onClicked: {
+                                    oClipboard.fnCopy(passwordTextField.text);
+                                }
+                            }
+                        }
+
+                        Label {
+                            text: "Generate new password (will replace old)"
+                        }
+
+                        RowLayout {
+                            spacing: 2
+
+                            TextField {
+                                id: generatedPasswordTextField
+                                Layout.fillWidth: true
+                                text: ''
+                                readOnly: true
                                 selectByMouse: true
                             }
 
@@ -582,14 +612,7 @@ Item {
                                 id: passwordEditPageGeneratePasswordButton
                                 text: "Generate"
                                 onClicked: {
-                                    passwordTextField.text = oPasswordListModel.fnGenerateIndex();
-                                }
-                            }
-                            Button {
-                                id: passwordEditPageCopyPasswordButton
-                                text: "Copy"
-                                onClicked: {
-                                    oClipboard.fnCopy(passwordTextField.text);
+                                    generatedPasswordTextField.text = oPasswordListModel.fnGenerateIndex();
                                 }
                             }
                         }
@@ -606,7 +629,7 @@ Item {
                                 border.width: 1
                                 border.color: "gray"
                                 Layout.minimumWidth: passwordEditPageScrollView.width-passwordEditPageCopyAdditionalButton.width-25
-                                Layout.minimumHeight: 200;
+                                Layout.minimumHeight: 100;
 
                                 ScrollView {
                                     anchors.fill: parent
@@ -628,6 +651,14 @@ Item {
                             }
                         }
                     }
+                }
+
+                BusyIndicator {
+                    id: passwordEditPageSyncBusyIndicator
+                    anchors.centerIn: parent
+                    z: 2
+                    visible: false
+                    enabled: true
                 }
 
                 RowLayout {
@@ -654,20 +685,100 @@ Item {
 
                         Layout.minimumWidth: parent.width/2
                         text: "Save"
+
+                        property int iServerIndex: 0
+                        property int iServersCount;
+
                         onClicked: {
                             if (stackView.bPasswordsListIsNewItem) {
                                 stackView.iEditedRecordIndex = oPasswordListModel.fnAddRow();
                             }
 
-                            console.log('stackView.iEditedRecordIndex', stackView.iEditedRecordIndex);
                             var oIndex = oPasswordListModel.index(stackView.iEditedRecordIndex, 0);
                             oPasswordListModel.setData(oIndex, nameTextField.text, PasswordListModel.NameRole);
                             oPasswordListModel.setData(oIndex, userTextField.text, PasswordListModel.UserRole);
-                            oPasswordListModel.setData(oIndex, passwordTextField.text, PasswordListModel.PasswordRole);
+                            if (generatedPasswordTextField.text != '') {
+                                oPasswordListModel.setData(oIndex, generatedPasswordTextField.text, PasswordListModel.PasswordRole);
+                            } else {
+                                oPasswordListModel.setData(oIndex, passwordTextField.text, PasswordListModel.PasswordRole);
+                            }
                             oPasswordListModel.setData(oIndex, additionalTextArea.text, PasswordListModel.AdditionalRole);
 
+                            if (oSettingsModel.fnGetBoolValue("settingsPageSynchronizeOnUpdate")) {
+                                fnSyncOnUpdate();
+                                return;
+                            }
 
                             stackView.pop();
+                        }
+
+                        function fnSyncOnUpdate()
+                        {
+                            nameTextField.enabled = false;
+                            passwordEditPageCopyNameButton.enabled = false;
+                            userTextField.enabled = false;
+                            passwordEditPageCopyUserButton.enabled = false;
+                            passwordTextField.enabled = false;
+                            passwordEditPageCopyPasswordButton.enabled = false;
+                            generatedPasswordTextField.enabled = false;
+                            passwordEditPageGeneratePasswordButton.enabled = false;
+                            additionalTextArea.enabled = false;
+                            passwordEditPageCopyAdditionalButton.enabled = false;
+
+                            passwordEditPageSyncBusyIndicator.visible = true;
+                            iServerIndex = 0;
+                            iServersCount = oServersListModel.fnSize();
+                            fnSyncNext();
+                        }
+
+                        function fnSyncNext()
+                        {
+                            if (oServersListModel.fnGetBoolValue(iServerIndex, "isEnabled")) {
+                                passwordSyncClient.sCommand = "SYNC_3";
+                                passwordSyncClient.fnCallBack = this.passwordEditPageSyncButtonCallBack;
+                                passwordSyncClient.fnErrorCallBack = this.passwordEditPageSyncButtonErrorCallBack;
+                                passwordSyncClient.sHost = oServersListModel.fnGetStringValue(iServerIndex, "host", "127.0.0.1");
+                                passwordSyncClient.sPort = oServersListModel.fnGetStringValue(iServerIndex, "port", "3002");
+                                passwordSyncClient.url = "ws://"+
+                                        oServersListModel.fnGetStringValue(iServerIndex, "host", "127.0.0.1")+
+                                        ":"+
+                                        oServersListModel.fnGetStringValue(iServerIndex, "port", "3002");
+                                iServerIndex++;
+                                passwordSyncClient.active = true;
+                            } else {
+                                iServerIndex++;
+                                passwordEditPageSyncButtonCallBack();
+                            }
+                        }
+
+                        function passwordEditPageSyncButtonErrorCallBack(sErrorString)
+                        {
+                            console.log('Error', iServerIndex, iServersCount);
+                            passwordEditPageSyncButtonCallBack();
+                        }
+
+                        function passwordEditPageSyncButtonCallBack()
+                        {
+                            passwordSyncClient.active = false;
+                            console.log(iServerIndex, iServersCount);
+                            if (iServerIndex >= iServersCount) {
+                                passwordEditPageSyncBusyIndicator.visible = false;
+
+                                nameTextField.enabled = true;
+                                passwordEditPageCopyNameButton.enabled = true;
+                                userTextField.enabled = true;
+                                passwordEditPageCopyUserButton.enabled = true;
+                                passwordTextField.enabled = true;
+                                passwordEditPageCopyPasswordButton.enabled = true;
+                                generatedPasswordTextField.enabled = true;
+                                passwordEditPageGeneratePasswordButton.enabled = true;
+                                additionalTextArea.enabled = true;
+                                passwordEditPageCopyAdditionalButton.enabled = true;
+
+                                stackView.pop();
+                            } else {
+                                fnSyncNext();
+                            }
                         }
                     }
                 }
@@ -697,6 +808,11 @@ Item {
                         anchors.margins: 10
 
                         CheckBox {
+                            id: settingsPageSynchronizeOnUpdate
+                            text: "Synchronize(upload and replace) on update"
+                            checked: stackView.settingsPageSynchronizeOnUpdate
+                        }
+                        CheckBox {
                             id: settingsPageShowUserInList
                             text: "Show user in list"
                             checked: stackView.settingsPageShowUserInList
@@ -705,6 +821,16 @@ Item {
                             id: settingsPageShowPasswordsInList
                             text: "Show passwords in list"
                             checked: stackView.settingsPageShowPasswordInList
+                        }
+                        CheckBox {
+                            id: settingsPageShowCreatedAtInList
+                            text: "Show creation time in list"
+                            checked: stackView.settingsPageShowCreatedAtInList
+                        }
+                        CheckBox {
+                            id: settingsPageShowUpdatedAtInList
+                            text: "Show update time in list"
+                            checked: stackView.settingsPageShowUpdatedAtInList
                         }
                         Label {
                             text: "Theme"
@@ -715,20 +841,19 @@ Item {
                             currentIndex: stackView.settingsPageStyleCurrentIndex
                         }
                         Label {
-                            text: "Web sockets server listen ip"
+                            text: "Web sockets server listen ip and port"
                         }
-                        TextField {
-                            id: settingsPageServerHost
-                            placeholderText: "0.0.0.0"
-                            text: stackView.settingsPageServerHostText
-                        }
-                        Label {
-                            text: "Web sockets server listen port"
-                        }
-                        TextField {
-                            id: settingsPageServerPort
-                            placeholderText: "3002"
-                            text: stackView.settingsPageServerPortText
+                        RowLayout {
+                            TextField {
+                                id: settingsPageServerHost
+                                placeholderText: "0.0.0.0"
+                                text: stackView.settingsPageServerHostText
+                            }
+                            TextField {
+                                id: settingsPageServerPort
+                                placeholderText: "3002"
+                                text: stackView.settingsPageServerPortText
+                            }
                         }
                         Label {
                             id: settingsPageServerStatusLabel
@@ -777,6 +902,9 @@ Item {
                             Layout.fillWidth: true
                             text: "Save"
                             onClicked: {
+                                oSettingsModel.fnUpdateBoolValue("settingsPageSynchronizeOnUpdate", settingsPageSynchronizeOnUpdate.checked);
+                                oSettingsModel.fnUpdateBoolValue("settingsPageShowCreatedAtInList", settingsPageShowCreatedAtInList.checked);
+                                oSettingsModel.fnUpdateBoolValue("settingsPageShowUpdatedAtInList", settingsPageShowUpdatedAtInList.checked);
                                 oSettingsModel.fnUpdateBoolValue("settingsPageShowUserInList", settingsPageShowUserInList.checked);
                                 oSettingsModel.fnUpdateBoolValue("settingsPageShowPasswordInList", settingsPageShowPasswordsInList.checked);
                                 oSettingsModel.fnUpdateIntValue("settingsPageStyle", settingsPageStyle.currentIndex);
@@ -860,6 +988,13 @@ Item {
                             text: passwordSyncClient.sStatus
                         }
 
+                        Label {
+                            id: syncPageErrorLabel
+                            padding: 10
+
+                            text: ''
+                        }
+
                         Item { Layout.fillHeight: true }
                     }
                 }
@@ -909,7 +1044,7 @@ Item {
                                 syncPageServersListButton.enabled = false;
                                 syncPageSyncMethodComboBox.enabled = false
                                 syncPageBusyIndicator.visible = true;
-
+                                syncPageErrorLabel.text = '';
                                 iServerIndex = 0;
                                 iServersCount = oServersListModel.fnSize();
                                 fnSyncNext();
@@ -935,10 +1070,11 @@ Item {
                                 }
                             }
 
-                            function settingsPageSyncButtonErrorCallBack()
+                            function settingsPageSyncButtonErrorCallBack(sErrorString)
                             {
                                 console.log('Error', iServerIndex, iServersCount);
-                                iServerIndex = iServersCount;
+                                //iServerIndex = iServersCount;
+                                syncPageErrorLabel.text += sErrorString + '<br>';
                                 settingsPageSyncButtonCallBack();
                             }
 
