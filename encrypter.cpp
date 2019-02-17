@@ -1,80 +1,251 @@
 #include "encrypter.h"
 #include <QDebug>
+#include <QBitArray>
+#include <math.h>
+
 
 Encrypter::Encrypter(QObject *parent) : QObject(parent)
 {
 
 }
 
-int Encrypter::fnEncrypt(QString sKey, QByteArray oByteArray, QByteArray &oResultByteArray)
+int Encrypter::fnEncrypt(QString sKey, QByteArray &oData, QByteArray &oResult)
 {
     qDebug() << __FUNCTION__;
 
     if (sKey.length() == 0) {
         return -1;
     }
-    if (oByteArray.length() == 0) {
+    if (oData.length() == 0) {
         return -2;
     }
 
-    //int iUnicodeLength = sizeof(ushort);
+    int iRounds = 5;
+    QByteArray oKeyByteArray = sKey.toUtf8();
+    oResult = oData;
 
-    for (int iIndex=0; iIndex<this->MAGIC_NUMBER.length(); iIndex++) {
-        /*
-        ushort* pcUnicodeChar = new ushort;
-        *pcUnicodeChar = 0;
-        *pcUnicodeChar = this->MAGIC_NUMBER[iIndex].unicode();
-        for (int iUnicodeIndex=0; iUnicodeIndex<iUnicodeLength; iUnicodeIndex++) {
-            oResultByteArray.append(((char*)pcUnicodeChar)[iUnicodeIndex] ^ sKey[iIndex % sKey.length()].unicode());
+    oResult.insert(0, oKeyByteArray);
+
+    for (int iRoundIndex=0; iRoundIndex<iRounds; iRoundIndex++) {
+        for (int iKeyIndex=0; iKeyIndex<oKeyByteArray.size(); iKeyIndex++) {
+            int aiMethods[5] = {0, 1, 2, 3, 4};
+
+            for (int iMethodIndex=0; iMethodIndex<5; iMethodIndex++) {
+                int iLineLength = oKeyByteArray[iKeyIndex] % 10 + 5;
+                unsigned char cByte = 0;
+
+                switch (aiMethods[iMethodIndex]) {
+                    case 0:
+                        for (int iLineIndex=0; iLineIndex<ceil(oResult.size()/iLineLength); iLineIndex++) {
+                            this->fnLeftByteShift(oResult, iLineIndex, iLineLength, oKeyByteArray[iKeyIndex]+iMethodIndex);
+                        }
+                    break;
+                    case 1:
+                        for (int iLineIndex=0; iLineIndex<ceil(oResult.size()/iLineLength); iLineIndex++) {
+                            this->fnRightByteShift(oResult, iLineIndex, iLineLength, oKeyByteArray[iKeyIndex]+iMethodIndex);
+                        }
+                    break;
+                    case 2:
+                        for (int iIndex=0; iIndex<oResult.size(); iIndex++) {
+                            cByte = oResult[iIndex];
+                            this->fnLeftBitShift(cByte, oKeyByteArray[iKeyIndex]+iMethodIndex);
+                            oResult[iIndex] = cByte;
+                        }
+                    break;
+                    case 3:
+                        for (int iIndex=0; iIndex<oResult.size(); iIndex++) {
+                            cByte = oResult[iIndex];
+                            this->fnRightBitShift(cByte, oKeyByteArray[iKeyIndex]+iMethodIndex);
+                            oResult[iIndex] = cByte;
+                        }
+                    break;
+                    case 4:
+                        for (int iIndex=0; iIndex<oResult.size(); iIndex++) {
+                            oResult[iIndex] = oResult[iIndex] ^ oKeyByteArray[(iIndex+iMethodIndex) % oKeyByteArray.size()];
+                        }
+                    break;
+                }
+            }
         }
-        delete pcUnicodeChar;
-        */
-        oResultByteArray.append(this->MAGIC_NUMBER[iIndex].unicode() ^ sKey[iIndex % sKey.length()].unicode());
-    }
-
-    for (int iIndex=0; iIndex<oByteArray.length(); iIndex++) {
-        oResultByteArray.append(oByteArray[iIndex] ^ sKey[iIndex % sKey.length()].unicode());
     }
 
     return 1;
 }
 
-int Encrypter::fnDecrypt(QString sKey, QByteArray oByteArray, QByteArray &oResultByteArray)
+int Encrypter::fnDecrypt(QString sKey, QByteArray &oData, QByteArray &oResult)
 {
     qDebug() << __FUNCTION__;
 
     if (sKey.length() == 0) {
         return -1;
     }
-    if (oByteArray.length() == 0) {
+    if (oData.length() == 0) {
         return -2;
     }
 
-    //int iUnicodeLength = sizeof(ushort);
-    QString sMagicNumber;
+    int iRounds = 5;
+    QByteArray oKeyByteArray = sKey.toUtf8();
+    oResult = oData;
 
-    for (int iIndex=0; iIndex<this->MAGIC_NUMBER.length(); iIndex++) {
-        /*
-        ushort* pcUnicodeChar = new ushort;
-        *pcUnicodeChar = 0;
-        for (int iUnicodeIndex=0; iUnicodeIndex<iUnicodeLength; iUnicodeIndex++) {
-            ((char*)pcUnicodeChar)[iUnicodeIndex] = oByteArray[iIndex*iUnicodeLength+iUnicodeIndex] ^ sKey[iIndex % sKey.length()].unicode();
+    for (int iRoundIndex=0; iRoundIndex<iRounds; iRoundIndex++) {
+        for (int iKeyIndex=oKeyByteArray.size()-1; iKeyIndex>=0; iKeyIndex--) {
+            int aiMethods[5] = {0, 1, 2, 3, 4};
+
+            for (int iMethodIndex=4; iMethodIndex>=0; iMethodIndex--) {
+                int iLineLength = oKeyByteArray[iKeyIndex] % 10 + 5;
+                unsigned char cByte = 0;
+
+                switch (aiMethods[iMethodIndex]) {
+                    case 1:
+                        for (int iLineIndex=0; iLineIndex<ceil(oResult.size()/iLineLength); iLineIndex++) {
+                            this->fnLeftByteShift(oResult, iLineIndex, iLineLength, oKeyByteArray[iKeyIndex]+iMethodIndex);
+                        }
+                    break;
+                    case 0:
+                        for (int iLineIndex=0; iLineIndex<ceil(oResult.size()/iLineLength); iLineIndex++) {
+                            this->fnRightByteShift(oResult, iLineIndex, iLineLength, oKeyByteArray[iKeyIndex]+iMethodIndex);
+                        }
+                    break;
+                    case 3:
+                        for (int iIndex=0; iIndex<oResult.size(); iIndex++) {
+                            cByte = oResult[iIndex];
+                            this->fnLeftBitShift(cByte, oKeyByteArray[iKeyIndex]+iMethodIndex);
+                            oResult[iIndex] = cByte;
+                        }
+                    break;
+                    case 2:
+                        for (int iIndex=0; iIndex<oResult.size(); iIndex++) {
+                            cByte = oResult[iIndex];
+                            this->fnRightBitShift(cByte, oKeyByteArray[iKeyIndex]+iMethodIndex);
+                            oResult[iIndex] = cByte;
+                        }
+                    break;
+                    case 4:
+                        for (int iIndex=0; iIndex<oResult.size(); iIndex++) {
+                            oResult[iIndex] = oResult[iIndex] ^ oKeyByteArray[(iIndex+iMethodIndex) % oKeyByteArray.size()];
+                        }
+                    break;
+                }
+            }
         }
-        sMagicNumber.append(QChar(*pcUnicodeChar));
-        delete pcUnicodeChar;
-        */
-        sMagicNumber.append(oByteArray[iIndex] ^ sKey[iIndex % sKey.length()].unicode());
     }
-    qDebug() << sMagicNumber;
 
-    if (sMagicNumber != this->MAGIC_NUMBER) {
+    QByteArray oExtractedKeyByteArray = oResult.mid(0, sKey.length());
+
+    if (oExtractedKeyByteArray != oKeyByteArray) {
         return -3;
     }
 
-    int iStartPosition = this->MAGIC_NUMBER.length();//*iUnicodeLength;
-    for (int iIndex=iStartPosition; iIndex<oByteArray.length(); iIndex++) {
-        oResultByteArray.append(oByteArray[iIndex] ^ sKey[(iIndex-iStartPosition) % sKey.length()].unicode());
-    }
-    qDebug() << oResultByteArray;
     return 1;
 }
+
+void Encrypter::fnLeftByteShift(QByteArray &oData, unsigned int iLineNumber, unsigned int iLineLength, unsigned int iShift)
+{
+    qDebug() << __FUNCTION__;
+    int iLinesCount = floor(oData.size() / iLineLength);
+    int iAllLinesCount = ceil(oData.size() / iLineLength);
+    iLineNumber = iLineNumber % iAllLinesCount;
+    int iPosition = iLineNumber*iLineLength;
+    int iNextLinePosition = (iLineNumber+1)*iLineLength;
+
+    if (iNextLinePosition>oData.size()) {
+        int iCurrentLineLength = oData.size() % iPosition + 1;
+        iShift = iShift % iCurrentLineLength;
+
+        if (iShift==0)
+            return;
+
+        if (iCurrentLineLength==1)
+            return;
+
+        for (int iIndex=0; iIndex<iShift; iIndex++) {
+            unsigned int iTemp = oData[iPosition];
+            for (int iShiftIndex=iPosition+1; iShiftIndex<iPosition+iCurrentLineLength; iShiftIndex++) {
+                oData[iShiftIndex-1] = oData[iShiftIndex];
+            }
+            oData[iPosition+iCurrentLineLength-1] = iTemp;
+        }
+    } else {
+        iShift = iShift % iLineLength;
+
+        if (iShift==0)
+            return;
+
+        for (int iIndex=0; iIndex<iShift; iIndex++) {
+            unsigned int iTemp = oData[iPosition];
+            for (int iShiftIndex=iPosition+1; iShiftIndex<iNextLinePosition; iShiftIndex++) {
+                oData[iShiftIndex-1] = oData[iShiftIndex];
+            }
+            oData[iNextLinePosition-1] = iTemp;
+        }
+    }
+}
+
+void Encrypter::fnRightByteShift(QByteArray &oData, unsigned int iLineNumber, unsigned int iLineLength, unsigned int iShift)
+{
+    qDebug() << __FUNCTION__;
+    int iLinesCount = floor(oData.size() / iLineLength);
+    int iAllLinesCount = ceil(oData.size() / iLineLength);
+    iLineNumber = iLineNumber % iAllLinesCount;
+    int iPosition = iLineNumber*iLineLength;
+    int iNextLinePosition = (iLineNumber+1)*iLineLength;
+
+    if (iNextLinePosition>oData.size()) {
+        int iCurrentLineLength = oData.size() % iPosition + 1;
+        iShift = iShift % iCurrentLineLength;
+
+        if (iShift==0)
+            return;
+
+        if (iCurrentLineLength==1)
+            return;
+
+        for (int iIndex=0; iIndex<iShift; iIndex++) {
+            unsigned int iTemp = oData[iPosition+iCurrentLineLength-1];
+            for (int iShiftIndex=iPosition+iCurrentLineLength-2; iShiftIndex>=iPosition; iShiftIndex--) {
+                oData[iShiftIndex+1] = oData[iShiftIndex];
+            }
+            oData[iPosition] = iTemp;
+        }
+    } else {
+        iShift = iShift % iLineLength;
+
+        if (iShift==0)
+            return;
+
+        for (int iIndex=0; iIndex<iShift; iIndex++) {
+            unsigned int iTemp = oData[iNextLinePosition-1];
+            for (int iShiftIndex=iNextLinePosition-2; iShiftIndex>=iPosition; iShiftIndex--) {
+                oData[iShiftIndex+1] = oData[iShiftIndex];
+            }
+            oData[iPosition] = iTemp;
+        }
+    }
+}
+
+void Encrypter::fnLeftBitShift(unsigned char &ucByte, unsigned int iShift)
+{
+    qDebug() << __FUNCTION__ << iShift;
+    iShift = iShift % 7 + 1;
+
+    if (iShift==0)
+        return;
+
+    //qDebug() << __FUNCTION__ << "Before:" << QString("%1").arg((unsigned int) ucByte, 0, 2);
+    ucByte = (ucByte << iShift) | (ucByte >> (8 - iShift));
+    //qDebug() << __FUNCTION__ << "After:" << QString("%1").arg((unsigned int) cByte, 0, 2);
+}
+
+void Encrypter::fnRightBitShift(unsigned char &ucByte, unsigned int iShift)
+{
+    qDebug() << __FUNCTION__ << iShift;
+    iShift = iShift % 7 + 1;
+
+    if (iShift==0)
+        return;
+
+    //qDebug() << __FUNCTION__ << "Before:" << QString("%1").arg((unsigned int) ucByte, 0, 2);
+    ucByte = (ucByte >> iShift) | (ucByte << (8 - iShift));
+    //qDebug() << __FUNCTION__ << "After:" << QString("%1").arg((unsigned int) cByte, 0, 2);
+}
+
