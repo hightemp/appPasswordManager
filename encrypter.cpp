@@ -9,7 +9,7 @@ Encrypter::Encrypter(QObject *parent) : QObject(parent)
 
 }
 
-int Encrypter::fnEncrypt(QString sKey, QByteArray &oData, QByteArray &oResult)
+int Encrypter::fnEncrypt(QString sKey, QByteArray oData, QByteArray &oResult)
 {
     qDebug() << __FUNCTION__;
 
@@ -72,7 +72,7 @@ int Encrypter::fnEncrypt(QString sKey, QByteArray &oData, QByteArray &oResult)
     return 1;
 }
 
-int Encrypter::fnDecrypt(QString sKey, QByteArray &oData, QByteArray &oResult)
+int Encrypter::fnDecrypt(QString sKey, QByteArray oData, QByteArray &oResult)
 {
     qDebug() << __FUNCTION__;
 
@@ -131,6 +131,7 @@ int Encrypter::fnDecrypt(QString sKey, QByteArray &oData, QByteArray &oResult)
     }
 
     QByteArray oExtractedKeyByteArray = oResult.mid(0, sKey.length());
+    oResult.remove(0, sKey.length());
 
     if (oExtractedKeyByteArray != oKeyByteArray) {
         return -3;
@@ -141,7 +142,6 @@ int Encrypter::fnDecrypt(QString sKey, QByteArray &oData, QByteArray &oResult)
 
 void Encrypter::fnLeftByteShift(QByteArray &oData, unsigned int iLineNumber, unsigned int iLineLength, unsigned int iShift)
 {
-    qDebug() << __FUNCTION__;
     int iLinesCount = floor(oData.size() / iLineLength);
     int iAllLinesCount = ceil(oData.size() / iLineLength);
     iLineNumber = iLineNumber % iAllLinesCount;
@@ -183,7 +183,6 @@ void Encrypter::fnLeftByteShift(QByteArray &oData, unsigned int iLineNumber, uns
 
 void Encrypter::fnRightByteShift(QByteArray &oData, unsigned int iLineNumber, unsigned int iLineLength, unsigned int iShift)
 {
-    qDebug() << __FUNCTION__;
     int iLinesCount = floor(oData.size() / iLineLength);
     int iAllLinesCount = ceil(oData.size() / iLineLength);
     iLineNumber = iLineNumber % iAllLinesCount;
@@ -225,27 +224,21 @@ void Encrypter::fnRightByteShift(QByteArray &oData, unsigned int iLineNumber, un
 
 void Encrypter::fnLeftBitShift(unsigned char &ucByte, unsigned int iShift)
 {
-    qDebug() << __FUNCTION__ << iShift;
     iShift = iShift % 7 + 1;
 
     if (iShift==0)
         return;
 
-    //qDebug() << __FUNCTION__ << "Before:" << QString("%1").arg((unsigned int) ucByte, 0, 2);
     ucByte = (ucByte << iShift) | (ucByte >> (8 - iShift));
-    //qDebug() << __FUNCTION__ << "After:" << QString("%1").arg((unsigned int) cByte, 0, 2);
 }
 
 void Encrypter::fnRightBitShift(unsigned char &ucByte, unsigned int iShift)
 {
-    qDebug() << __FUNCTION__ << iShift;
     iShift = iShift % 7 + 1;
 
     if (iShift==0)
         return;
 
-    //qDebug() << __FUNCTION__ << "Before:" << QString("%1").arg((unsigned int) ucByte, 0, 2);
     ucByte = (ucByte >> iShift) | (ucByte << (8 - iShift));
-    //qDebug() << __FUNCTION__ << "After:" << QString("%1").arg((unsigned int) cByte, 0, 2);
 }
 
