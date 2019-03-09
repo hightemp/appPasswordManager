@@ -367,6 +367,10 @@ QVariant PasswordListModel::fnFromByteArray(QVariant oByteArray, QVariant iSyncM
     int iEncryptResult = oEncrypter.fnDecrypt(this->sPassword, oByteArray.toByteArray(), sResult);
     qDebug() << "oEncrypter.fnDecrypt" << iEncryptResult;
 
+    if (iEncryptResult != 1) {
+        return iEncryptResult;
+    }
+
     QJsonDocument oJsonDocument = QJsonDocument::fromJson(sResult);
 
     qDebug() << "iSyncMethod.toInt()" << iSyncMethod.toInt();

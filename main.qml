@@ -66,9 +66,9 @@ Item {
     WebSocketServer {
         id: passwordSyncServer
 
-        //host: ""
         listen: false
         accept: true
+        //host: ""
         //port: 3002
 
         onClientConnected: {
@@ -84,7 +84,7 @@ Item {
                             .onBinaryMessageReceived
                             .connect(function(sMessage)
                             {
-                                oPasswordListModel.fnFromByteArray(sMessage, {SYNC_2:0, SYNC_3:1}[sCommand]);
+                                oPasswordListModel.fnFromByteArray(sMessage, {SYNC_3:0, SYNC_4:1, SYNC_5:2}[sCommand]);
                                 oPasswordListModel.fnSave();
                             });
                     }
