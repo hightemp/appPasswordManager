@@ -28,7 +28,7 @@ int Encrypter::fnEncrypt(QString sKey, QByteArray oData, QByteArray &oResult)
 
     for (int iRoundIndex=0; iRoundIndex<iRounds; iRoundIndex++) {
         for (int iKeyIndex=0; iKeyIndex<oKeyByteArray.size(); iKeyIndex++) {
-            int aiMethods[5] = {0, 4, 1, 4, 2, 4, 3, 4};
+            int aiMethods[] = {0, 4, 1, 4, 2, 4, 3, 4};
 
             for (int iMethodIndex=0; iMethodIndex<5; iMethodIndex++) {
                 int iLineLength = oKeyByteArray[iKeyIndex] % 10 + 5;
@@ -89,7 +89,7 @@ int Encrypter::fnDecrypt(QString sKey, QByteArray oData, QByteArray &oResult)
 
     for (int iRoundIndex=0; iRoundIndex<iRounds; iRoundIndex++) {
         for (int iKeyIndex=oKeyByteArray.size()-1; iKeyIndex>=0; iKeyIndex--) {
-            int aiMethods[5] = {0, 4, 1, 4, 2, 4, 3, 4};
+            int aiMethods[] = {0, 4, 1, 4, 2, 4, 3, 4};
 
             for (int iMethodIndex=4; iMethodIndex>=0; iMethodIndex--) {
                 int iLineLength = oKeyByteArray[iKeyIndex] % 10 + 5;
