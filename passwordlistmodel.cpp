@@ -363,15 +363,15 @@ QVariant PasswordListModel::fnFromByteArray(QVariant oByteArray, QVariant iSyncM
     beginResetModel();
 
     Encrypter oEncrypter;
-    QByteArray sResult;
-    int iEncryptResult = oEncrypter.fnDecrypt(this->sPassword, oByteArray.toByteArray(), sResult);
+    QByteArray oResult;
+    int iEncryptResult = oEncrypter.fnDecrypt(this->sPassword, oByteArray.toByteArray(), oResult);
     qDebug() << "oEncrypter.fnDecrypt" << iEncryptResult;
 
     if (iEncryptResult != 1) {
         return iEncryptResult;
     }
 
-    QJsonDocument oJsonDocument = QJsonDocument::fromJson(sResult);
+    QJsonDocument oJsonDocument = QJsonDocument::fromJson(oResult);
 
     qDebug() << "iSyncMethod.toInt()" << iSyncMethod.toInt();
     if (iSyncMethod.toInt() == 0) {
@@ -422,4 +422,32 @@ QVariant PasswordListModel::fnFromByteArray(QVariant oByteArray, QVariant iSyncM
     endResetModel();
 
     return iEncryptResult;
+}
+
+QVariant PasswordListModel::fnEncryptPassword()
+{
+    qDebug() << __FUNCTION__;
+
+    Encrypter oEncrypter;
+    QByteArray sResult;
+    int iEncryptResult = oEncrypter.fnEncrypt(this->sPassword, this->sPassword.toUtf8(), sResult);
+    qDebug() << "oEncrypter.fnEncryptPassword" << iEncryptResult;
+
+    return sResult;
+}
+
+QVariant PasswordListModel::fnCheckPassword(QVariant oByteArray)
+{
+    qDebug() << __FUNCTION__;
+
+    Encrypter oEncrypter;
+    QByteArray oResult;
+    int iEncryptResult = oEncrypter.fnDecrypt(this->sPassword, oByteArray.toByteArray(), oResult);
+    qDebug() << "oEncrypter.fnCheckPassword" << iEncryptResult;
+
+    if (iEncryptResult != 1) {
+        return false;
+    }
+
+    return oResult == this->sPassword;
 }

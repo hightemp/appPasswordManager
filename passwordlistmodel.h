@@ -66,6 +66,8 @@ public slots:
     QVariant fnSize();
     QVariant fnToByteArray();
     QVariant fnFromByteArray(QVariant oByteArray, QVariant iSyncMethod);
+    QVariant fnEncryptPassword();
+    QVariant fnCheckPassword(QVariant oByteArray);
 };
 
 #endif // PASSWORDLISTMODEL_H

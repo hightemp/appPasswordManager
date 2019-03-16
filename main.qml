@@ -66,27 +66,62 @@ Item {
     WebSocketServer {
         id: passwordSyncServer
 
+        property var aClients: [];
+
         listen: false
         accept: true
         //host: ""
         //port: 3002
 
         onClientConnected: {
+            aClients.push({ bAuthorized: false, sCommand: "" });
+            var iClientId = aClients.length - 1;
+
             webSocket
                 .onTextMessageReceived
                 .connect(function(sCommand)
                 {
-                    if (sCommand == "SYNC_0" || sCommand == "SYNC_1" || sCommand == "SYNC_2") {
-                        webSocket.sendBinaryMessage(oPasswordListModel.fnToByteArray());
+                    console.log("sCommand: "+sCommand);
+                    aClients[iClientId].sCommand = sCommand;
+
+                    if (aClients[iClientId].bAuthorized) {
+                        console.log("aClients[iClientId].bAuthorized ", iClientId, aClients[iClientId].bAuthorized);
+
+                        if (sCommand == "SYNC_0" || sCommand == "SYNC_1" || sCommand == "SYNC_2") {
+                            webSocket.sendBinaryMessage(oPasswordListModel.fnToByteArray());
+                        }
                     }
-                    if (sCommand == "SYNC_3" || sCommand == "SYNC_4" || sCommand == "SYNC_5") {
-                        webSocket
-                            .onBinaryMessageReceived
-                            .connect(function(sMessage)
-                            {
-                                oPasswordListModel.fnFromByteArray(sMessage, {SYNC_3:0, SYNC_4:1, SYNC_5:2}[sCommand]);
+                });
+
+            webSocket
+                .onBinaryMessageReceived
+                .connect(function(sMessage)
+                {
+                    var sCommand = aClients[iClientId].sCommand;
+
+                    console.log("onBinaryMessageReceived - sCommand: "+sCommand);
+
+                    if (sCommand == "AUTH") {
+                        if (oPasswordListModel.fnCheckPassword(sMessage)) {
+                            aClients[iClientId].bAuthorized = true;
+                            webSocket.sendTextMessage("AUTH_OK");
+                            console.log("sendTextMessage AUTH_OK");
+                        } else {
+                            webSocket.sendTextMessage("AUTH_ERROR");
+                            console.log("sendTextMessage AUTH_ERROR");
+                        }
+                    }
+                    if (aClients[iClientId].bAuthorized) {
+                        if (sCommand == "SYNC_3" || sCommand == "SYNC_4" || sCommand == "SYNC_5") {
+                            var iResult = oPasswordListModel.fnFromByteArray(sMessage, {SYNC_3:0, SYNC_4:1, SYNC_5:2}[sCommand]);
+                            if (iResult != 1) {
+                                webSocket.sendTextMessage("SYNC_ERROR");
+                            }
+                            if (iResult == 1) {
                                 oPasswordListModel.fnSave();
-                            });
+                                webSocket.sendTextMessage("SYNC_OK");
+                            }
+                        }
                     }
                 });
         }
@@ -118,7 +153,6 @@ Item {
 
         onBinaryMessageReceived: {
             if (sCommand == "SYNC_0" || sCommand == "SYNC_1" || sCommand == "SYNC_2") {
-                console.log(message);
                 var iResult = oPasswordListModel.fnFromByteArray(message, {SYNC_0:0, SYNC_1:1, SYNC_2:2}[sCommand]);
                 if (iResult == -3) {
                     sStatus = "Status: "+sHost+":"+sPort+" - wrong password";
@@ -135,6 +169,31 @@ Item {
             }
         }
 
+        onTextMessageReceived: {
+            if (message=="AUTH_OK") {
+                sendTextMessage(sCommand);
+
+                if (sCommand == "SYNC_3" || sCommand == "SYNC_4" || sCommand == "SYNC_5") {
+                    sendBinaryMessage(oPasswordListModel.fnToByteArray());
+                }
+            }
+            if (message=="AUTH_ERROR") {
+                sStatus = "Status: "+sHost+":"+sPort+" - authorization error";
+                if (fnCallBack)
+                    fnCallBack();
+            }
+            if (message=="SYNC_OK") {
+                sStatus = "Status: "+sHost+":"+sPort+" - synchronized";
+                if (fnCallBack)
+                    fnCallBack();
+            }
+            if (message=="SYNC_ERROR") {
+                sStatus = "Status: "+sHost+":"+sPort+" - synchronization error";
+                if (fnCallBack)
+                    fnCallBack();
+            }
+        }
+
         onStatusChanged: {
             if (status == WebSocket.Error) {
                 sStatus = "Error";//"Client error: "+sHost+":"+sPort+" - %1".arg(errorString);
@@ -143,14 +202,8 @@ Item {
             } else if (status == WebSocket.Open) {
                 sStatus = "Status: "+sHost+":"+sPort+" - connected";
 
-                sendTextMessage(sCommand);
-
-                if (sCommand == "SYNC_3" || sCommand == "SYNC_4" || sCommand == "SYNC_5") {
-                    sendBinaryMessage(oPasswordListModel.fnToByteArray());
-                    sStatus = "Status: "+sHost+":"+sPort+" - synchronized";
-                    if (fnCallBack)
-                        fnCallBack();
-                }
+                sendTextMessage("AUTH");
+                sendBinaryMessage(oPasswordListModel.fnEncryptPassword());
             } else if (status == WebSocket.Connecting) {
                 sStatus = "Status: "+sHost+":"+sPort+" - connecting..";
             }  else if (status == WebSocket.Closing) {
@@ -645,6 +698,7 @@ Item {
                             Button {
                                 id: passwordEditPageCopyAdditionalButton
                                 text: "Copy"
+                                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
                                 onClicked: {
                                     oClipboard.fnCopy(additionalTextArea.text);
                                 }
@@ -851,6 +905,7 @@ Item {
                             }
                             TextField {
                                 id: settingsPageServerPort
+                                width: 100
                                 placeholderText: "3002"
                                 text: stackView.settingsPageServerPortText
                             }
@@ -986,6 +1041,7 @@ Item {
                             padding: 10
 
                             text: passwordSyncClient.sStatus
+                            wrapMode: Text.WordWrap
                         }
 
                         Label {
@@ -1184,6 +1240,7 @@ Item {
                                 }
                                 TextField {
                                     id: serversListDelegateServerPort
+                                    width: 100
 
                                     placeholderText: "3002"
                                     text: model.port
