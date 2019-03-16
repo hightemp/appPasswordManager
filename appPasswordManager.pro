@@ -50,4 +50,4 @@ DISTFILES += \
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD
 
-RC_ICONS = images/app-icon.ico
+RC_ICONS = app-icon.ico

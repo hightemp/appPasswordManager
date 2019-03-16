@@ -3,5 +3,6 @@
         <file>main.qml</file>
         <file>qtquickcontrols2.conf</file>
         <file>images/key-icon.png</file>
+        <file>images/app-icon.ico</file>
     </qresource>
 </RCC>
