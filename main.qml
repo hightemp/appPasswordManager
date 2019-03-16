@@ -214,7 +214,7 @@ Item {
         }
     }
 
-    Keys.onReleased: {
+    Keys.onPressed: {
         if (event.key == Qt.Key_Back) {
             console.log("Back button captured - wunderbar !")
             event.accepted = true
@@ -255,13 +255,6 @@ Item {
         onCurrentItemChanged: {
             if (currentItem && currentItem.defaultFocusItem) {
                 currentItem.defaultFocusItem.focus = true
-            }
-        }
-
-        Keys.onPressed: {
-            if (event.key == Qt.Key_Back) {
-                console.log("Key_Back");
-                Qt.quit();
             }
         }
 
