@@ -218,7 +218,7 @@ Item {
         if (event.key == Qt.Key_Back) {
             console.log("Back button captured - wunderbar !")
             event.accepted = true
-            Qt.quit();
+            quit();
         }
     }
 

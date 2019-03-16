@@ -69,7 +69,6 @@ int main(int argc, char *argv[])
     oView.setGeometry(QRect(0, 0, 640, 480));
     QObject::connect(oView.engine(), SIGNAL(quit()), qApp, SLOT(quit()));
     oView.setTitle("Passwords manager");
-    //oView.setColor();
 
     qDebug() << sPasswordsFilePath;
 
@@ -84,7 +83,15 @@ int main(int argc, char *argv[])
 
     oView.rootContext()->setContextProperty("oStyler", &oStyler);
 
-    oView.show();
+    #ifdef Q_OS_ANDROID
+        oView.show();
+    #else
+        #ifdef Q_OS_IOS
+            oView.show();
+        #else
+            oView.hide();
+        #endif
+    #endif
 
     QObject* oRootObject = (QObject*) oView.rootObject();
     QMetaObject::invokeMethod(oRootObject, "fnStart");
