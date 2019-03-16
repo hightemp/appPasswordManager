@@ -11,6 +11,7 @@
 #include "styler.h"
 #include "serverslistmodel.h"
 
+#define QT_NO_DEBUG_OUTPUT
 
 int main(int argc, char *argv[])
 {
