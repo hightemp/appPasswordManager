@@ -140,6 +140,21 @@ Item {
         }
     }
 
+    Timer {
+        id: connectionTimeout;
+
+        repeat: false;
+        interval: 1000;
+
+        onTriggered: {
+            connectionTimeout.stop();
+
+            passwordSyncClient.sStatus = "Error";
+            if (passwordSyncClient.fnErrorCallBack)
+                passwordSyncClient.fnErrorCallBack("Client error: "+passwordSyncClient.sHost+":"+passwordSyncClient.sPort+" - connection timeout");
+        }
+    }
+
     WebSocket {
         id: passwordSyncClient
         property string sCommand: ""
@@ -195,16 +210,23 @@ Item {
         }
 
         onStatusChanged: {
+            console.log('onStatusChanged', status);
             if (status == WebSocket.Error) {
-                sStatus = "Error";//"Client error: "+sHost+":"+sPort+" - %1".arg(errorString);
+                connectionTimeout.stop();
+
+                sStatus = "Error";
                 if (fnErrorCallBack)
                     fnErrorCallBack("Client error: "+sHost+":"+sPort+" - %1".arg(errorString));
             } else if (status == WebSocket.Open) {
+                connectionTimeout.stop();
+
                 sStatus = "Status: "+sHost+":"+sPort+" - connected";
 
                 sendTextMessage("AUTH");
                 sendBinaryMessage(oPasswordListModel.fnEncryptPassword());
             } else if (status == WebSocket.Connecting) {
+                connectionTimeout.start();
+
                 sStatus = "Status: "+sHost+":"+sPort+" - connecting..";
             }  else if (status == WebSocket.Closing) {
                 //sStatus = "Status: "+sHost+":"+sPort+" - closing connection..";
@@ -769,6 +791,7 @@ Item {
 
                         function fnSyncOnUpdate()
                         {
+                            console.log('fnSyncOnUpdate');
                             nameTextField.enabled = false;
                             passwordEditPageCopyNameButton.enabled = false;
                             userTextField.enabled = false;
@@ -779,6 +802,8 @@ Item {
                             passwordEditPageGeneratePasswordButton.enabled = false;
                             additionalTextArea.enabled = false;
                             passwordEditPageCopyAdditionalButton.enabled = false;
+                            passwordEditPageBackButton.enabled = false;
+                            passwordEditPageSaveButton.enabled = false;
 
                             passwordEditPageSyncBusyIndicator.visible = true;
                             iServerIndex = 0;
@@ -788,6 +813,7 @@ Item {
 
                         function fnSyncNext()
                         {
+                            console.log('fnSyncNext');
                             if (oServersListModel.fnGetBoolValue(iServerIndex, "isEnabled")) {
                                 passwordSyncClient.sCommand = "SYNC_3";
                                 passwordSyncClient.fnCallBack = this.passwordEditPageSyncButtonCallBack;
@@ -808,12 +834,14 @@ Item {
 
                         function passwordEditPageSyncButtonErrorCallBack(sErrorString)
                         {
+                            console.log('passwordEditPageSyncButtonErrorCallBack');
                             console.log('Error', iServerIndex, iServersCount);
                             passwordEditPageSyncButtonCallBack();
                         }
 
                         function passwordEditPageSyncButtonCallBack()
                         {
+                            console.log('passwordEditPageSyncButtonCallBack');
                             passwordSyncClient.active = false;
                             console.log(iServerIndex, iServersCount);
                             if (iServerIndex >= iServersCount) {
@@ -829,6 +857,8 @@ Item {
                                 passwordEditPageGeneratePasswordButton.enabled = true;
                                 additionalTextArea.enabled = true;
                                 passwordEditPageCopyAdditionalButton.enabled = true;
+                                passwordEditPageBackButton.enabled = true;
+                                passwordEditPageSaveButton.enabled = true;
 
                                 stackView.pop();
                             } else {
@@ -864,7 +894,7 @@ Item {
 
                         CheckBox {
                             id: settingsPageSynchronizeOnUpdate
-                            text: "Synchronize(upload and replace) on update"
+                            text: "Upload and replace on item save"
                             checked: stackView.settingsPageSynchronizeOnUpdate
                         }
                         CheckBox {
