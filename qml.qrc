@@ -4,5 +4,14 @@
         <file>qtquickcontrols2.conf</file>
         <file>images/key-icon.png</file>
         <file>images/app-icon.ico</file>
+        <file>MasterPasswordEnterPage.qml</file>
+        <file>PasswordsListViewPage.qml</file>
+        <file>PasswordSyncClient.qml</file>
+        <file>PasswordSyncServer.qml</file>
+        <file>PasswordEditPage.qml</file>
+        <file>SettingsPage.qml</file>
+        <file>SyncPage.qml</file>
+        <file>ServersListViewPage.qml</file>
+        <file>ChangePasswordPage.qml</file>
     </qresource>
 </RCC>
