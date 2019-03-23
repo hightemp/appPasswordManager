@@ -133,6 +133,8 @@ Component {
                     changePasswordPageSaveButton.enabled = true;
                     changePasswordPageOldPasswordTextField.enabled = true;
                     changePasswordPageNewPasswordTextField.enabled = true;
+                    changePasswordPageOldPasswordTextField.text = '';
+                    changePasswordPageNewPasswordTextField.text = '';
                     passwordSyncClient.active = false;
                 }
             }
