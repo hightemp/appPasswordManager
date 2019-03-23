@@ -521,7 +521,7 @@ QVariant PasswordListModel::fnImport(QString sURL, int iType)
 {
     QString sFilePath = QUrl(sURL).toLocalFile();
 
-    qDebug() << __FUNCTION__ << sFilePath;
+    qDebug() << __FUNCTION__ << sFilePath << iType;
 
     if (!this->fnFileExists()) {
         endResetModel();
@@ -549,7 +549,7 @@ QVariant PasswordListModel::fnImport(QString sURL, int iType)
             this->fnInit();
         }
 
-        char cChar;
+        QChar oChar;
         QString sCurrentProperty = "";
         QString sCurrentPropertyEnd = "";
         QString sCurrentPropertyValue = "";
@@ -558,39 +558,44 @@ QVariant PasswordListModel::fnImport(QString sURL, int iType)
         int iRowIndex = -1;
         int iMultiLineSC = 0;
 
-        while (oFileObj.getChar(&cChar)) {
+        QString Lines = oFileObj.readAll();
+
+        for (int iIndex=0; iIndex<Lines.size(); iIndex++) {
+            oChar = Lines[iIndex];
+
+            qDebug() << oChar;
+
             if (!bProperty && !bMultiLineProperty) {
-                if (iMultiLineSC>0) {
-                    if (cChar!='<') {
-                        iMultiLineSC = 0;
-                    }
-                }
-                if ((cChar<'a' || cChar>'z') && cChar!=':' && cChar!='\n' && cChar!='<') {
+                if ((oChar<'a' || oChar>'z') && oChar!=':' && oChar!='\n' && oChar!='<') {
                     continue;
                 } else {
-                    if (cChar=='<') {
+                    if (oChar=='<') {
                         iMultiLineSC++;
                         continue;
                     }
-                    if (cChar>='a' || cChar<='z') {
-                        sCurrentProperty += cChar;
+                    if (oChar>='a' && oChar<='z') {
+                        sCurrentProperty += oChar;
                         continue;
                     }
-                    if (cChar=='\n') {
+                    if (oChar=='\n') {
                         if (iMultiLineSC==3) {
-                            iMultiLineSC=0;
                             bMultiLineProperty = true;
+                            qDebug() << "bMultiLineProperty" << sCurrentProperty;
                         } else if (iMultiLineSC==0) {
                             bProperty = true;
+                            qDebug() << "bProperty" << sCurrentProperty;
                         }
+
+                        iMultiLineSC = 0;
                         continue;
                     }
                 }
             }
             if (bProperty) {
-                if (cChar!='\n') {
-                    sCurrentPropertyValue += cChar;
+                if (oChar!='\n') {
+                    sCurrentPropertyValue += oChar;
                 } else {
+                    qDebug() << "Save property " << sCurrentProperty << sCurrentPropertyValue;
                     if (sCurrentProperty=="name") {
                         if (iType==3) {
                             this->fnAddRow();
@@ -620,33 +625,33 @@ QVariant PasswordListModel::fnImport(QString sURL, int iType)
                 }
             }
             if (bMultiLineProperty) {
-                if (iMultiLineSC>0) {
-                    if (cChar!='<') {
-                        iMultiLineSC = 0;
-                        sCurrentPropertyValue += sCurrentPropertyEnd;
-                        sCurrentPropertyEnd = "";
-                    }
-                }
-                if (cChar=='<') {
+                if (oChar=='<') {
                     iMultiLineSC++;
                 }
                 if (iMultiLineSC>0) {
-                    if (cChar=='\n') {
+                    if (oChar=='\n' || iIndex==Lines.size()-1) {
+                        qDebug() << "Compare " << sCurrentPropertyEnd << ("<<<"+sCurrentProperty);
                         if (sCurrentPropertyEnd=="<<<"+sCurrentProperty) {
+                            qDebug() << "End of " << sCurrentProperty;
                             if (sCurrentProperty=="additional" && iRowIndex!=-1) {
                                 this->fnSetValue(iRowIndex, sCurrentProperty, sCurrentPropertyValue);
                             }
+
+                            iMultiLineSC = 0;
+                            sCurrentProperty = "";
+                            sCurrentPropertyValue = "";
+                            sCurrentPropertyEnd = "";
                             bMultiLineProperty = false;
                         } else {
-                            sCurrentPropertyEnd += cChar;
+                            sCurrentPropertyEnd += oChar;
                             sCurrentPropertyValue += sCurrentPropertyEnd;
                             sCurrentPropertyEnd = "";
                         }
                     } else {
-                        sCurrentPropertyEnd += cChar;
+                        sCurrentPropertyEnd += oChar;
                     }
                 } else {
-                    sCurrentPropertyValue += cChar;
+                    sCurrentPropertyValue += oChar;
                 }
             }
         }
@@ -654,6 +659,8 @@ QVariant PasswordListModel::fnImport(QString sURL, int iType)
     }
 
     endResetModel();
+
+    this->fnSave();
 
     return iResult;
 }
