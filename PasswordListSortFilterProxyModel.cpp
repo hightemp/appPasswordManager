@@ -1,5 +1,5 @@
-#include "passwordlistsortfilterproxymodel.h"
-#include "passwordlistmodel.h"
+#include "PasswordListSortFilterProxyModel.h"
+#include "PasswordListModel.h"
 #include <QDebug>
 
 bool PasswordListSortFilterProxyModel::filterAcceptsRow(int iSourceRow, const QModelIndex &oSourceParent) const

@@ -9,7 +9,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QJsonDocument>
-#include "settingsmodel.h"
+#include "SettingsModel.h"
 
 class ServersListModel : public QAbstractListModel
 {

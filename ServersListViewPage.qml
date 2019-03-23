@@ -121,9 +121,9 @@ Component {
 
                 Button {
                     id: serversListViewPageAddButton
-                    //Layout.minimumWidth: (parent.width-20)/2 + 1
+                    Layout.minimumWidth: (stackView.width)/2
                     text: "Add"
-                    Layout.fillWidth: true
+                    //Layout.fillWidth: true
 
                     onClicked: {
                         oServersListModel.fnAddRow();
@@ -132,9 +132,9 @@ Component {
 
                 Button {
                     id: serversListViewPageDeleteButton
-                    //Layout.minimumWidth: (parent.width-20)/2 + 1
+                    Layout.minimumWidth: (stackView.width)/2
                     text: "Delete"
-                    Layout.fillWidth: true
+                    //Layout.fillWidth: true
 
                     onClicked: {
                         oServersListModel.fnRemoveRow(serversListView.currentIndex);
@@ -147,9 +147,9 @@ Component {
 
                 Button {
                     id: serversListViewPageBackButton
-                    //Layout.minimumWidth: (parent.width-20)/2 + 1
+                    Layout.minimumWidth: (stackView.width)/2
                     text: "Back"
-                    Layout.fillWidth: true
+                    //Layout.fillWidth: true
 
                     onClicked: {
                         stackView.pop();
@@ -158,9 +158,9 @@ Component {
 
                 Button {
                     id: serversListViewPageSaveButton
-                    //Layout.minimumWidth: (parent.width-20)/2 + 1
+                    Layout.minimumWidth: (stackView.width)/2
                     text: "Save"
-                    Layout.fillWidth: true
+                    //Layout.fillWidth: true
 
                     onClicked: {
                         oServersListModel.fnSave();

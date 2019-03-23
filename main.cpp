@@ -4,12 +4,12 @@
 #include <QDir>
 #include <QIcon>
 #include <QQuickView>
-#include "passwordlistmodel.h"
-#include "passwordlistsortfilterproxymodel.h"
-#include "settingsmodel.h"
-#include "clipboard.h"
-#include "styler.h"
-#include "serverslistmodel.h"
+#include "PasswordListModel.h"
+#include "PasswordListSortFilterProxyModel.h"
+#include "SettingsModel.h"
+#include "Clipboard.h"
+#include "Styler.h"
+#include "ServersListModel.h"
 
 #define QT_NO_DEBUG_OUTPUT
 

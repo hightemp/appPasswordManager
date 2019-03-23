@@ -1,4 +1,4 @@
-#include "settingsmodel.h"
+#include "SettingsModel.h"
 
 SettingsModel::SettingsModel(QObject *parent) : QObject(parent)
 {

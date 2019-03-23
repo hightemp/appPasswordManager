@@ -26,7 +26,7 @@ Component {
 
                 CheckBox {
                     id: settingsPageSynchronizeOnUpdate
-                    text: "Upload and replace on item save"
+                    text: "Upload and replace list on item save"
                     checked: stackView.settingsPageSynchronizeOnUpdate
                 }
                 CheckBox {
@@ -61,7 +61,11 @@ Component {
                     text: "Web sockets server listen ip and port"
                 }
                 RowLayout {
+                    width: 300
+                    Layout.minimumWidth: 300
+
                     TextField {
+                        width: 200
                         id: settingsPageServerHost
                         placeholderText: "0.0.0.0"
                         text: stackView.settingsPageServerHostText
@@ -107,7 +111,7 @@ Component {
                 Button {
                     id: settingsPageBackButton
 
-                    Layout.fillWidth: true
+                    Layout.minimumWidth: (stackView.width)/2
                     text: "Back"
                     onClicked: {
                         stackView.pop();
@@ -117,7 +121,7 @@ Component {
                 Button {
                     id: settingsPageSaveButton
 
-                    Layout.fillWidth: true
+                    Layout.minimumWidth: (stackView.width)/2
                     text: "Save"
                     onClicked: {
                         oSettingsModel.fnUpdateBoolValue("settingsPageSynchronizeOnUpdate", settingsPageSynchronizeOnUpdate.checked);

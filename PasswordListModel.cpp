@@ -1,5 +1,5 @@
-#include "passwordlistmodel.h"
-#include "encrypter.h"
+#include "PasswordListModel.h"
+#include "Encrypter.h"
 
 PasswordListModel::PasswordListModel(QObject *poParent) : QAbstractListModel(poParent)
 {

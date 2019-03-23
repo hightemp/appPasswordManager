@@ -50,7 +50,7 @@ Component {
             Button {
                 id:masterPasswordEnterPageCloseButton
 
-                Layout.minimumWidth: parent.width/2
+                Layout.minimumWidth: (stackView.width)/2
                 text: "Close"
                 onClicked: {
                     Qt.quit();
@@ -60,7 +60,7 @@ Component {
             Button {
                 id: masterPasswordEnterPageEnterButton
 
-                Layout.minimumWidth: parent.width/2
+                Layout.minimumWidth: (stackView.width)/2
                 text: "Enter"
                 onClicked: fnEnter()
 

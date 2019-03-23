@@ -1,4 +1,4 @@
-#include "styler.h"
+#include "Styler.h"
 #include <QQuickStyle>
 #include <QDebug>
 

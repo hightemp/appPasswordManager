@@ -1,4 +1,4 @@
-#include "encrypter.h"
+#include "Encrypter.h"
 #include <QDebug>
 #include <QBitArray>
 #include <math.h>

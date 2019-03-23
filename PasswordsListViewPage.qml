@@ -112,10 +112,50 @@ Component {
                 Layout.fillHeight: true
 
                 Button {
-                    id: addButton
+                    id: historyButton
                     //Layout.minimumWidth: (parent.width-20)/2 + 1
-                    text: "Add"
+                    text: "History"
                     Layout.fillWidth: true
+
+                    onClicked: {
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillHeight: true
+
+                Button {
+                    id: exportButton
+                    Layout.minimumWidth: (stackView.width)/2
+                    text: "Export"
+                    //Layout.fillWidth: true
+
+                    onClicked: {
+                    }
+                }
+
+                Button {
+                    id: importButton
+                    Layout.minimumWidth: (stackView.width)/2
+                    text: "Import"
+                    //Layout.fillWidth: true
+
+                    onClicked: {
+
+                    }
+                }
+
+            }
+
+            RowLayout {
+                Layout.fillHeight: true
+
+                Button {
+                    id: addButton
+                    Layout.minimumWidth: (stackView.width)/2
+                    text: "Add"
+                    //Layout.fillWidth: true
 
                     onClicked: {
                         //stackView.iEditedRecordIndex = -1;
@@ -131,9 +171,9 @@ Component {
 
                 Button {
                     id: deleteButton
-                    //Layout.minimumWidth: (parent.width-20)/2 + 1
+                    Layout.minimumWidth: (stackView.width)/2
                     text: "Delete"
-                    Layout.fillWidth: true
+                    //Layout.fillWidth: true
 
                     onClicked: {
                         deleteItemDialog.open();
@@ -147,9 +187,9 @@ Component {
 
                 Button {
                     id: syncButton
-                    //Layout.minimumWidth: (parent.width-20)/2 + 1
+                    Layout.minimumWidth: (stackView.width)/2
                     text: "Synchronize"
-                    Layout.fillWidth: true
+                    //Layout.fillWidth: true
 
                     onClicked: {
                         stackView.syncPageServerIP = oSettingsModel.fnGetStringValue("syncPageServerIP");
@@ -160,9 +200,9 @@ Component {
 
                 Button {
                     id: settingsButton
-                    //Layout.minimumWidth: (parent.width-20)/2 + 1
+                    Layout.minimumWidth: (stackView.width)/2
                     text: "Settings"
-                    Layout.fillWidth: true
+                    //Layout.fillWidth: true
 
                     onClicked: {
                         stackView.settingsPageSynchronizeOnUpdate = oSettingsModel.fnGetBoolValue("settingsPageSynchronizeOnUpdate");

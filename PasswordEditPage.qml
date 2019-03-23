@@ -1,6 +1,7 @@
 import QtQuick 2.9
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
+import PasswordListModel 1.0
 
 Component {
     id: passwordEditPage
@@ -174,7 +175,7 @@ Component {
             Button {
                 id: passwordEditPageBackButton
 
-                Layout.minimumWidth: parent.width/2
+                Layout.minimumWidth: (stackView.width)/2
                 text: "Back"
                 onClicked: {
                     stackView.pop();
@@ -184,7 +185,7 @@ Component {
             Button {
                 id: passwordEditPageSaveButton
 
-                Layout.minimumWidth: parent.width/2
+                Layout.minimumWidth: (stackView.width)/2
                 text: "Save"
 
                 property int iServerIndex: 0

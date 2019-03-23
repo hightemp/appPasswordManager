@@ -13,21 +13,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += main.cpp \
-    clipboard.cpp \
-    encrypter.cpp \
-    passwordlistmodel.cpp \
-    passwordlistsortfilterproxymodel.cpp \
-    settingsmodel.cpp \
-    serverslistmodel.cpp \
-    styler.cpp
+    PasswordListModel.cpp \
+    Encrypter.cpp \
+    Clipboard.cpp \
+    PasswordListSortFilterProxyModel.cpp \
+    ServersListModel.cpp \
+    SettingsModel.cpp \
+    Styler.cpp
 
-HEADERS += clipboard.h \
-    encrypter.h \
-    passwordlistmodel.h \
-    passwordlistsortfilterproxymodel.h \
-    settingsmodel.h \
-    serverslistmodel.h \
-    styler.h
+HEADERS += \
+    PasswordListModel.h \
+    Encrypter.h \
+    Clipboard.h \
+    PasswordListSortFilterProxyModel.h \
+    ServersListModel.h \
+    SettingsModel.h \
+    Styler.h
 
 RESOURCES += qml.qrc
 

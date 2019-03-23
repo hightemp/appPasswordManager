@@ -1,5 +1,5 @@
-#include "serverslistmodel.h"
-#include "encrypter.h"
+#include "ServersListModel.h"
+#include "Encrypter.h"
 
 ServersListModel::ServersListModel(SettingsModel* poSettingsModel, QObject *poParent) : QAbstractListModel(poParent)
 {
