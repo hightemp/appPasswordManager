@@ -18,7 +18,6 @@ class ServersListModel : public QAbstractListModel
 
 protected:
     QString sFilePath;
-    QString sPassword;
     SettingsModel* poSettingsModel;
 
 public:

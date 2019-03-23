@@ -17,7 +17,7 @@ class PasswordListModel : public QAbstractListModel
     Q_OBJECT
     Q_ENUMS(PasswordListModelRoles)
 
-protected:
+public:
     QJsonArray* poJsonArray = nullptr;
     QString sFilePath;
     QString sPassword;
@@ -72,7 +72,7 @@ public slots:
     QVariant fnExport(QString sURL, int iType);
     QVariant fnImport(QString sURL, int iType);
     QVariant fnFind(QString sKey, QString sValue);
-    void fnUpdateValue(int iIndex, QString sKey, QString sValue);
+    void fnSetValue(int iIndex, QString sKey, QString sValue);
 };
 
 #endif // PASSWORDLISTMODEL_H

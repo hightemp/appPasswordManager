@@ -596,6 +596,8 @@ QVariant PasswordListModel::fnImport(QString sURL, int iType)
                             if (iRowIndex==-1) {
                                 this->fnAddRow();
                                 iRowIndex = this->fnSize().toInt()-1;
+                            } else if (iType==5) {
+                                iRowIndex = -1;
                             }
                         }
                     }
