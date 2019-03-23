@@ -4,13 +4,21 @@
 PasswordListModel::PasswordListModel(QObject *poParent) : QAbstractListModel(poParent)
 {
     qDebug() << __FUNCTION__;
-    this->poJsonArray = new QJsonArray();
+    this->fnInit();
 }
 
 PasswordListModel::~PasswordListModel()
 {
     qDebug() << __FUNCTION__;
     delete this->poJsonArray;
+}
+
+void PasswordListModel::fnInit()
+{
+    if (this->poJsonArray) {
+        delete this->poJsonArray;
+    }
+    this->poJsonArray = new QJsonArray();
 }
 
 QHash<int,QByteArray> PasswordListModel::roleNames() const
@@ -538,9 +546,7 @@ QVariant PasswordListModel::fnImport(QString sURL, int iType)
     } else if (iType==3 || iType==4 || iType==5) {
 
         if (iType==3) {
-            delete this->poJsonArray;
-
-            this->poJsonArray = new QJsonArray();
+            this->fnInit();
         }
 
         char cChar;

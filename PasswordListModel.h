@@ -39,6 +39,7 @@ public:
     explicit PasswordListModel(QObject *poParent = nullptr);
     ~PasswordListModel() override;
 
+    void fnInit();
     QHash<int,QByteArray> roleNames() const override;
     QVariant data(const QModelIndex &oIndex, int iRole) const override;
     bool setData(const QModelIndex &oIndex, const QVariant &oValue, int iRole = Qt::EditRole) override;
