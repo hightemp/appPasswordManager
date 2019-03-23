@@ -7,10 +7,11 @@ import QtQuick.Window 2.0
 import QtWebSockets 1.1
 import PasswordListModel 1.0
 
-Item {
-    id: applicationWindowRootObject
-    visible: true
-    anchors.fill: parent
+ApplicationWindow {
+    id: applicationWindow
+    visible: false
+    title: "Passwords manager"
+    //anchors.fill: parent
 
     SystemTrayIcon {
         visible: true
@@ -25,39 +26,46 @@ Item {
 
         onActivated: {
             if(reason !== SystemTrayIcon.Context) {
-                oWindow.show()
-                oWindow.raise()
-                oWindow.requestActivate()
+                applicationWindow.show()
+                applicationWindow.raise()
+                applicationWindow.requestActivate()
             }
         }
     }
 
     Connections {
-        target: oWindow
+        target: applicationWindow
         onClosing: {
-            oWindow.hide();
+            applicationWindow.hide();
             close.accepted = false
             console.log('onClosing', close.accepted);
         }
         onVisibilityChanged: {
-           console.log("onVisibilityChanged", oWindow.visibility, oWindow.visible);
+           console.log("onVisibilityChanged", applicationWindow.visibility, applicationWindow.visible);
         }
     }
 
     onXChanged: {
-        oSettingsModel.fnUpdateStringValue("applicationWindow.x", oWindow.x);
+        oSettingsModel.fnUpdateStringValue("applicationWindow.x", applicationWindow.x);
         oSettingsModel.fnSave();
     }
 
     onYChanged: {
-        oSettingsModel.fnUpdateStringValue("applicationWindow.y", oWindow.y);
+        oSettingsModel.fnUpdateStringValue("applicationWindow.y", applicationWindow.y);
         oSettingsModel.fnSave();
     }
 
     function fnStart()
     {
-        oWindow.setX(oSettingsModel.fnGetStringValue("applicationWindow.x"));
-        oWindow.setY(oSettingsModel.fnGetStringValue("applicationWindow.y"));
+        console.log('fnStart');
+
+        applicationWindow.visible = sOSType == "Mobile";
+
+        applicationWindow.setWidth(640);
+        applicationWindow.setHeight(480);
+        console.log('Set window position: ', oSettingsModel.fnGetStringValue("applicationWindow.x"), oSettingsModel.fnGetStringValue("applicationWindow.y"));
+        applicationWindow.setX(oSettingsModel.fnGetStringValue("applicationWindow.x"));
+        applicationWindow.setY(oSettingsModel.fnGetStringValue("applicationWindow.y"));
 
         if (!oPasswordListModel.fnFileExists()) {
             stackView.masterPasswordEnterPageStatusLabelText = "File with passwords not found.<br> Will be created new.";
@@ -95,14 +103,18 @@ Item {
         id: stackView
         initialItem: masterPasswordEnterPage
         anchors.fill: parent
+
         property var oPasswordsListViewModel
         property var oServersListViewModel
+        property var oHistoryListViewModel
+
         property int iEditedRecordIndex
         property bool bPasswordsListIsNewItem: false
         property string sName: ""
         property string sUser: ""
         property string sPassword: ""
         property string sAdditional: ""
+
         property bool settingsPageSynchronizeOnUpdate
         property bool settingsPageShowUserInList
         property bool settingsPageShowPasswordInList
@@ -113,10 +125,13 @@ Item {
         property string settingsPageServerHostText
         property string settingsPageServerPortText
         property string settingsPageServerStatusLabelText
+
         property string syncPageServerIP
         property string syncPageSyncMethod
+
         property string changePasswordPageOldPasswordText: ""
         property string changePasswordPageNewPasswordText: ""
+
         property string masterPasswordEnterPageStatusLabelText: ""
 
         focus: true
@@ -131,6 +146,8 @@ Item {
 
         PasswordsListViewPage { id: passwordsListViewPage }
 
+        PasswordsChangeHistoryPage { id: passwordsChangeHistoryPage }
+
         PasswordEditPage { id: passwordEditPage }
 
         SettingsPage { id: settingsPage }
@@ -140,16 +157,5 @@ Item {
         ServersListViewPage { id: serversListViewPage }
 
         ChangePasswordPage { id: changePasswordPage }
-    }
-
-    MessageDialog {
-        id: deleteItemDialog
-        title: qsTr("Delete item?")
-        standardButtons: Dialog.No | Dialog.Yes
-        text: "Delete item?"
-
-        onYes: {
-            oPasswordListModel.fnRemoveRow(stackView.iEditedRecordIndex);
-        }
     }
 }

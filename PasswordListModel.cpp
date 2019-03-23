@@ -451,3 +451,62 @@ QVariant PasswordListModel::fnCheckPassword(QVariant oByteArray)
 
     return oResult == this->sPassword;
 }
+
+QVariant PasswordListModel::fnExport(QString sFilePath)
+{
+    qDebug() << __FUNCTION__ << sFilePath;
+
+    QFile oFileObj(sFilePath);
+
+    if (!oFileObj.open(QIODevice::WriteOnly)) {
+        qDebug() << "Can't open file";
+        return -1;
+    }
+
+    QJsonDocument oJsonDocument(*this->poJsonArray);
+
+    oFileObj.write(oJsonDocument.toJson());
+
+    oFileObj.close();
+
+    return 1;
+}
+
+QVariant PasswordListModel::fnImport(QString sFilePath)
+{
+    qDebug() << __FUNCTION__ << sFilePath;
+
+    if (this->poJsonArray != nullptr) {
+        delete this->poJsonArray;
+    }
+
+    beginResetModel();
+    this->poJsonArray = new QJsonArray;
+
+    if (!this->fnFileExists()) {
+        endResetModel();
+        qDebug() << "File doesn't exist";
+        return 0;
+    }
+
+    QFile oFileObj(sFilePath);
+
+    if (!oFileObj.open(QIODevice::ReadOnly)) {
+        endResetModel();
+        qDebug() << "Can't open file";
+        return -1;
+    }
+
+    QJsonDocument oJsonDocument = QJsonDocument::fromJson(oFileObj.readAll());
+
+    if (!oJsonDocument.isArray()) {
+        endResetModel();
+        qDebug() << "Root element not array";
+        return -2;
+    }
+
+    *this->poJsonArray = oJsonDocument.array();
+
+    endResetModel();
+    return 1;
+}

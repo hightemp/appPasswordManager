@@ -1,6 +1,8 @@
 import QtQuick 2.9
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
+import QtQuick.Window 2.0
+import QtQuick.Dialogs 1.2
 
 Component {
     id: passwordsListViewPage
@@ -22,7 +24,6 @@ Component {
             placeholderText: "Filter.."
 
             onTextChanged: {
-                //oPasswordListSortFilterProxyModel.fnSetFilterFixedString(text);
                 oPasswordListSortFilterProxyModel.setFilterFixedString(text);
             }
         }
@@ -118,6 +119,7 @@ Component {
                     Layout.fillWidth: true
 
                     onClicked: {
+                        stackView.push(passwordsChangeHistoryPage);
                     }
                 }
             }
@@ -132,6 +134,8 @@ Component {
                     //Layout.fillWidth: true
 
                     onClicked: {
+                        //passwordsListViewPageExportFileDialog.folder = sStandardPath;
+                        passwordsListViewPageExportFileDialog.open();
                     }
                 }
 
@@ -142,10 +146,38 @@ Component {
                     //Layout.fillWidth: true
 
                     onClicked: {
-
+                        //passwordsListViewPageImportFileDialog.folder = sStandardPath;
+                        passwordsListViewPageImportFileDialog.open();
                     }
                 }
 
+                FileDialog {
+                    id: passwordsListViewPageExportFileDialog
+                    title: 'Export'
+                    folder: shortcuts.home
+                    nameFilters: [ "JSON (*.json)", "TEXT (*.txt)" ]
+                    selectMultiple: false
+                    selectExisting: false
+
+                    onAccepted: {
+                        console.log('Export', passwordsListViewPageExportFileDialog.fileUrls, passwordsListViewPageExportFileDialog.fileUrl);
+                        oPasswordListModel.fnExport(passwordsListViewPageExportFileDialog.fileUrl);
+                    }
+                }
+
+                FileDialog {
+                    id: passwordsListViewPageImportFileDialog
+                    title: 'Import'
+                    folder: shortcuts.home
+                    nameFilters: [ "JSON (*.json)", "TEXT (*.txt)" ]
+                    selectMultiple: false
+                    selectExisting: true
+
+                    onAccepted: {
+                        console.log('Import', passwordsListViewPageImportFileDialog.fileUrls, passwordsListViewPageImportFileDialog.fileUrl);
+                        oPasswordListModel.fnImport(passwordsListViewPageImportFileDialog.fileUrl);
+                    }
+                }
             }
 
             RowLayout {
@@ -176,7 +208,7 @@ Component {
                     //Layout.fillWidth: true
 
                     onClicked: {
-                        deleteItemDialog.open();
+                        passwordsListViewPageDeleteItemDialog.open();
                     }
                 }
 
@@ -194,6 +226,7 @@ Component {
                     onClicked: {
                         stackView.syncPageServerIP = oSettingsModel.fnGetStringValue("syncPageServerIP");
                         stackView.syncPageSyncMethod = oSettingsModel.fnGetStringValue("syncPageSyncMethod");
+
                         stackView.push(syncPage);
                     }
                 }
@@ -210,15 +243,26 @@ Component {
                         stackView.settingsPageShowUpdatedAtInList = oSettingsModel.fnGetBoolValue("settingsPageShowUpdatedAtInList");
                         stackView.settingsPageShowUserInList = oSettingsModel.fnGetBoolValue("settingsPageShowUserInList");
                         stackView.settingsPageShowPasswordInList = oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList");
-                        stackView.settingsPageStyleCurrentIndex = oSettingsModel.fnGetIntValue("settingsPageStyle");
+                        //stackView.settingsPageStyleCurrentIndex = oSettingsModel.fnGetIntValue("settingsPageStyle");
                         stackView.settingsPageServerHostText = oSettingsModel.fnGetStringValue("settingsPageServerHost", "0.0.0.0");
                         stackView.settingsPageServerPortText = oSettingsModel.fnGetStringValue("settingsPageServerPort", "3002");
-                        stackView.settingsPageStyleModel = oStyler.fnGetStylesList();
+                        //stackView.settingsPageStyleModel = oStyler.fnGetStylesList();
+
                         stackView.push(settingsPage);
                     }
                 }
             }
         }
 
+        MessageDialog {
+            id: passwordsListViewPageDeleteItemDialog
+            title: qsTr("Delete item?")
+            standardButtons: Dialog.No | Dialog.Yes
+            text: "Delete item?"
+
+            onYes: {
+                oPasswordListModel.fnRemoveRow(stackView.iEditedRecordIndex);
+            }
+        }
     }
 }

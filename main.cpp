@@ -1,9 +1,33 @@
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
+#ifndef QTQUICKCONTROLSAPPLICATION_H
+#define QTQUICKCONTROLSAPPLICATION_H
+
+    #ifdef QT_WIDGETS_LIB
+        #include <QtWidgets/QApplication>
+    #else
+        #include <QtGui/QGuiApplication>
+    #endif
+
+    QT_BEGIN_NAMESPACE
+
+    #ifdef QT_WIDGETS_LIB
+        #define QtQuickControlsApplication QApplication
+    #else
+        #define QtQuickControlsApplication QGuiApplication
+    #endif
+
+    QT_END_NAMESPACE
+
+#endif
+
+#include <QtQml/QQmlApplicationEngine>
+#include <QtGui/QSurfaceFormat>
+#include <QtQuick/QQuickWindow>
 #include <QQmlContext>
+
 #include <QDir>
 #include <QIcon>
 #include <QQuickView>
+#include <QStandardPaths>
 #include "PasswordListModel.h"
 #include "PasswordListSortFilterProxyModel.h"
 #include "SettingsModel.h"
@@ -17,7 +41,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
-    QGuiApplication app(argc, argv);
+    QtQuickControlsApplication app(argc, argv);
 
     app.setWindowIcon(QIcon(":/images/key-icon.png"));
 
@@ -50,11 +74,11 @@ int main(int argc, char *argv[])
 
     ServersListModel oServersListModel(&oSettingsModel);
 
-    Styler oStyler;
+    //Styler oStyler;
 
-    qDebug() << oSettingsModel.fnGetStringValue("settingsPageStyle");
+    //qDebug() << oSettingsModel.fnGetStringValue("settingsPageStyle");
 
-    oStyler.fnSetStyle(oSettingsModel.fnGetStringValue("settingsPageStyle").toInt());
+    //oStyler.fnSetStyle(oSettingsModel.fnGetStringValue("settingsPageStyle").toInt());
 
     PasswordListModel oPasswordListModel;
     oPasswordListModel.fnSetFilePath(sPasswordsFilePath);
@@ -65,38 +89,34 @@ int main(int argc, char *argv[])
     Clipboard oClipboard;
     oClipboard.fnSetClipboard(QGuiApplication::clipboard());
 
-    QQuickView oView;
-    oView.setSource(QUrl(QStringLiteral("qrc:/main.qml")));
-    oView.setResizeMode(QQuickView::SizeRootObjectToView);
-    oView.setGeometry(QRect(0, 0, 640, 480));
-    QObject::connect(oView.engine(), SIGNAL(quit()), qApp, SLOT(quit()));
-    oView.setTitle("Passwords manager");
+
+    QQmlApplicationEngine oEngine(QUrl("qrc:/main.qml"));
 
     qDebug() << sPasswordsFilePath;
 
-    oView.rootContext()->setContextProperty("oClipboard", &oClipboard);
+    oEngine.rootContext()->setContextProperty("oClipboard", &oClipboard);
 
-    oView.rootContext()->setContextProperty("oPasswordListModel", &oPasswordListModel);
-    oView.rootContext()->setContextProperty("oPasswordListSortFilterProxyModel", &oPasswordListSortFilterProxyModel);
+    oEngine.rootContext()->setContextProperty("oPasswordListModel", &oPasswordListModel);
+    oEngine.rootContext()->setContextProperty("oPasswordListSortFilterProxyModel", &oPasswordListSortFilterProxyModel);
 
-    oView.rootContext()->setContextProperty("oSettingsModel", &oSettingsModel);
-    oView.rootContext()->setContextProperty("oServersListModel", &oServersListModel);
-    oView.rootContext()->setContextProperty("oWindow", &oView);
+    oEngine.rootContext()->setContextProperty("oSettingsModel", &oSettingsModel);
+    oEngine.rootContext()->setContextProperty("oServersListModel", &oServersListModel);
+    oEngine.rootContext()->setContextProperty("oWindow", &oEngine);
 
-    oView.rootContext()->setContextProperty("oStyler", &oStyler);
+    //oEngine.rootContext()->setContextProperty("oStyler", &oStyler);
 
     #ifdef Q_OS_ANDROID
-        oView.show();
+        oEngine.rootContext()->setContextProperty("sOSType", "Mobile");
     #else
         #ifdef Q_OS_IOS
-            oView.show();
+            oEngine.rootContext()->setContextProperty("sOSType", "Mobile");
         #else
-            oView.hide();
+            oEngine.rootContext()->setContextProperty("sOSType", "Desktop");
         #endif
     #endif
 
-    QObject* oRootObject = (QObject*) oView.rootObject();
-    QMetaObject::invokeMethod(oRootObject, "fnStart");
+    QMetaObject::invokeMethod(oEngine.rootObjects()[0], "fnStart");
+
 
     return app.exec();
 }

@@ -1,4 +1,5 @@
-QT += quick qml websockets quickcontrols2
+QT += quick qml websockets #quickcontrols2
+!no_desktop: QT += widgets
 CONFIG += c++11
 
 # The following define makes your compiler emit warnings if you use

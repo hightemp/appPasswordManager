@@ -1,5 +1,5 @@
 #include "Styler.h"
-#include <QQuickStyle>
+//#include <QQuickStyle>
 #include <QDebug>
 
 Styler::Styler(QObject *parent) : QObject(parent)
@@ -9,17 +9,17 @@ Styler::Styler(QObject *parent) : QObject(parent)
 
 QVariant Styler::fnGetStylesList()
 {
-    return QQuickStyle::availableStyles();
+    return QString("");// QQuickStyle::availableStyles();
 }
 
 void Styler::fnSetStyle(int iIndex)
 {
-    qDebug() << "fnSetStyle" << QQuickStyle::availableStyles()[iIndex] << iIndex;
-    QQuickStyle::setStyle(QQuickStyle::availableStyles()[iIndex]);
+    //qDebug() << "fnSetStyle" << QQuickStyle::availableStyles()[iIndex] << iIndex;
+    //QQuickStyle::setStyle(QQuickStyle::availableStyles()[iIndex]);
 }
 
 void Styler::fnSetStyle(QString sStyleName)
 {
-    QQuickStyle::setStyle(sStyleName);
+    //QQuickStyle::setStyle(sStyleName);
 }
 

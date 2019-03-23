@@ -13,5 +13,6 @@
         <file>SyncPage.qml</file>
         <file>ServersListViewPage.qml</file>
         <file>ChangePasswordPage.qml</file>
+        <file>PasswordsChangeHistoryPage.qml</file>
     </qresource>
 </RCC>

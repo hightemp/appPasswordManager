@@ -10,6 +10,10 @@ Component {
         //color: "transparent"
         //visible: false
 
+        Component.onCompleted: {
+            console.log('settingsPage - onCompleted');
+        }
+
         ScrollView {
             id: settingsPageScrollView
             anchors {
@@ -49,6 +53,7 @@ Component {
                     text: "Show update time in list"
                     checked: stackView.settingsPageShowUpdatedAtInList
                 }
+                /*
                 Label {
                     text: "Theme"
                 }
@@ -57,6 +62,7 @@ Component {
                     model: stackView.settingsPageStyleModel
                     currentIndex: stackView.settingsPageStyleCurrentIndex
                 }
+                */
                 Label {
                     text: "Web sockets server listen ip and port"
                 }
@@ -129,14 +135,14 @@ Component {
                         oSettingsModel.fnUpdateBoolValue("settingsPageShowUpdatedAtInList", settingsPageShowUpdatedAtInList.checked);
                         oSettingsModel.fnUpdateBoolValue("settingsPageShowUserInList", settingsPageShowUserInList.checked);
                         oSettingsModel.fnUpdateBoolValue("settingsPageShowPasswordInList", settingsPageShowPasswordsInList.checked);
-                        oSettingsModel.fnUpdateIntValue("settingsPageStyle", settingsPageStyle.currentIndex);
+                        //oSettingsModel.fnUpdateIntValue("settingsPageStyle", settingsPageStyle.currentIndex);
                         oSettingsModel.fnUpdateStringValue("settingsPageServerHost", settingsPageServerHost.text);
                         oSettingsModel.fnUpdateStringValue("settingsPageServerPort", settingsPageServerPort.text);
                         passwordSyncServer.listen = false;
                         passwordSyncServer.host = settingsPageServerHost.text;
                         passwordSyncServer.port = settingsPageServerPort.text;
                         passwordSyncServer.listen = true;
-                        oStyler.fnSetStyle(settingsPageStyle.currentText);
+                        //oStyler.fnSetStyle(settingsPageStyle.currentText);
                         oPasswordListModel.fnUpdate();
                         oSettingsModel.fnSave();
                         //stackView.pop();
