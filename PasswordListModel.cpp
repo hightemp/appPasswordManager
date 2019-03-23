@@ -151,7 +151,7 @@ bool PasswordListModel::insertRows(int iPosition, int iRows, const QModelIndex &
 
     for (int iRow = 0; iRow < iRows; ++iRow) {
         QJsonObject oJsonObject;
-        oJsonObject["id"] = this->fnGenerateIndex();
+        oJsonObject["id"] = QDateTime::currentDateTime().toMSecsSinceEpoch(); //this->fnGenerateIndex();
         oJsonObject["createdAt"] = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss");
         QJsonValue oJsonValue(oJsonObject);
         this->poJsonArray->insert(iPosition, oJsonValue);
@@ -357,24 +357,33 @@ QVariant PasswordListModel::fnToByteArray()
     return sResult;
 }
 
-QVariant PasswordListModel::fnFromByteArray(QVariant oByteArray, QVariant iSyncMethod)
+QVariant PasswordListModel::fnFromByteArray(QVariant oByteArray, QVariant iSyncMethod, bool bEncrypted)
 {
     qDebug() << __FUNCTION__;
     beginResetModel();
 
-    Encrypter oEncrypter;
-    QByteArray oResult;
-    int iEncryptResult = oEncrypter.fnDecrypt(this->sPassword, oByteArray.toByteArray(), oResult);
-    qDebug() << "oEncrypter.fnDecrypt" << iEncryptResult;
+    QJsonDocument oJsonDocument;
+    int iEncryptResult = 1;
 
-    if (iEncryptResult != 1) {
-        return iEncryptResult;
+    if (bEncrypted) {
+        Encrypter oEncrypter;
+        QByteArray oResult;
+        iEncryptResult = oEncrypter.fnDecrypt(this->sPassword, oByteArray.toByteArray(), oResult);
+        qDebug() << "oEncrypter.fnDecrypt" << iEncryptResult;
+
+        if (iEncryptResult != 1) {
+            return iEncryptResult;
+        }
+
+        oJsonDocument = QJsonDocument::fromJson(oResult);
+    } else {
+        oJsonDocument = QJsonDocument::fromJson(oByteArray.toByteArray());
     }
-
-    QJsonDocument oJsonDocument = QJsonDocument::fromJson(oResult);
 
     qDebug() << "iSyncMethod.toInt()" << iSyncMethod.toInt();
     if (iSyncMethod.toInt() == 0) {
+        delete this->poJsonArray;
+
         *this->poJsonArray = oJsonDocument.array();
     }
     if (iSyncMethod.toInt() == 1 || iSyncMethod.toInt() == 2) {
@@ -452,8 +461,10 @@ QVariant PasswordListModel::fnCheckPassword(QVariant oByteArray)
     return oResult == this->sPassword;
 }
 
-QVariant PasswordListModel::fnExport(QString sFilePath)
+QVariant PasswordListModel::fnExport(QString sURL, int iType)
 {
+    QString sFilePath = QUrl(sURL).toLocalFile();
+
     qDebug() << __FUNCTION__ << sFilePath;
 
     QFile oFileObj(sFilePath);
@@ -463,25 +474,46 @@ QVariant PasswordListModel::fnExport(QString sFilePath)
         return -1;
     }
 
-    QJsonDocument oJsonDocument(*this->poJsonArray);
+    if (iType==0) {
+        QJsonDocument oJsonDocument(*this->poJsonArray);
 
-    oFileObj.write(oJsonDocument.toJson());
+        oFileObj.write(oJsonDocument.toJson());
+    } else if (iType==1) {
+        int iLength = (*this->poJsonArray).size();
+        QString sLine = "";
+        for (int iIndex=0; iIndex<iLength; iIndex++) {
+            QJsonObject oCurrentObject = (*this->poJsonArray).at(iIndex).toObject();
+            oFileObj.write("name:\n");
+            sLine = oCurrentObject["name"].toString()+"\n";
+            oFileObj.write(sLine.toUtf8());
+
+            oFileObj.write("user:\n");
+            sLine = oCurrentObject["user"].toString()+"\n";
+            oFileObj.write(sLine.toUtf8());
+
+            oFileObj.write("password:\n");
+            sLine = oCurrentObject["password"].toString()+"\n";
+            oFileObj.write(sLine.toUtf8());
+
+            oFileObj.write("<<<additional\n");
+            sLine = oCurrentObject["additional"].toString()+"\n";
+            oFileObj.write(sLine.toUtf8());
+            oFileObj.write("<<<additional\n");
+
+            oFileObj.write("\n");
+        }
+    }
 
     oFileObj.close();
 
     return 1;
 }
 
-QVariant PasswordListModel::fnImport(QString sFilePath)
+QVariant PasswordListModel::fnImport(QString sURL, int iType)
 {
+    QString sFilePath = QUrl(sURL).toLocalFile();
+
     qDebug() << __FUNCTION__ << sFilePath;
-
-    if (this->poJsonArray != nullptr) {
-        delete this->poJsonArray;
-    }
-
-    beginResetModel();
-    this->poJsonArray = new QJsonArray;
 
     if (!this->fnFileExists()) {
         endResetModel();
@@ -497,16 +529,145 @@ QVariant PasswordListModel::fnImport(QString sFilePath)
         return -1;
     }
 
-    QJsonDocument oJsonDocument = QJsonDocument::fromJson(oFileObj.readAll());
+    int iResult = 1;
 
-    if (!oJsonDocument.isArray()) {
-        endResetModel();
-        qDebug() << "Root element not array";
-        return -2;
+    beginResetModel();
+
+    if (iType==0 || iType==1 || iType==2) {
+        iResult = this->fnFromByteArray(oFileObj.readAll(), iType, false).toInt();
+    } else if (iType==3 || iType==4 || iType==5) {
+
+        if (iType==3) {
+            delete this->poJsonArray;
+
+            this->poJsonArray = new QJsonArray();
+        }
+
+        char cChar;
+        QString sCurrentProperty = "";
+        QString sCurrentPropertyEnd = "";
+        QString sCurrentPropertyValue = "";
+        bool bProperty = false;
+        bool bMultiLineProperty = false;
+        int iRowIndex = -1;
+        int iMultiLineSC = 0;
+
+        while (oFileObj.getChar(&cChar)) {
+            if (!bProperty && !bMultiLineProperty) {
+                if (iMultiLineSC>0) {
+                    if (cChar!='<') {
+                        iMultiLineSC = 0;
+                    }
+                }
+                if ((cChar<'a' || cChar>'z') && cChar!=':' && cChar!='\n' && cChar!='<') {
+                    continue;
+                } else {
+                    if (cChar=='<') {
+                        iMultiLineSC++;
+                        continue;
+                    }
+                    if (cChar>='a' || cChar<='z') {
+                        sCurrentProperty += cChar;
+                        continue;
+                    }
+                    if (cChar=='\n') {
+                        if (iMultiLineSC==3) {
+                            iMultiLineSC=0;
+                            bMultiLineProperty = true;
+                        } else if (iMultiLineSC==0) {
+                            bProperty = true;
+                        }
+                        continue;
+                    }
+                }
+            }
+            if (bProperty) {
+                if (cChar!='\n') {
+                    sCurrentPropertyValue += cChar;
+                } else {
+                    if (sCurrentProperty=="name") {
+                        if (iType==3) {
+                            this->fnAddRow();
+                            iRowIndex = this->fnSize().toInt()-1;
+                        }
+                        if (iType==4 || iType==5) {
+                            iRowIndex = this->fnFind(sCurrentProperty, sCurrentPropertyValue).toInt();
+
+                            if (iRowIndex==-1) {
+                                this->fnAddRow();
+                                iRowIndex = this->fnSize().toInt()-1;
+                            }
+                        }
+                    }
+
+                    if (sCurrentProperty=="name" || sCurrentProperty=="user" || sCurrentProperty=="password") {
+                        if (iRowIndex!=-1) {
+                            this->fnSetValue(iRowIndex, sCurrentProperty, sCurrentPropertyValue);
+                        }
+                    }
+
+                    sCurrentProperty = "";
+                    sCurrentPropertyValue = "";
+                    bProperty = false;
+                }
+            }
+            if (bMultiLineProperty) {
+                if (iMultiLineSC>0) {
+                    if (cChar!='<') {
+                        iMultiLineSC = 0;
+                        sCurrentPropertyValue += sCurrentPropertyEnd;
+                        sCurrentPropertyEnd = "";
+                    }
+                }
+                if (cChar=='<') {
+                    iMultiLineSC++;
+                }
+                if (iMultiLineSC>0) {
+                    if (cChar=='\n') {
+                        if (sCurrentPropertyEnd=="<<<"+sCurrentProperty) {
+                            if (sCurrentProperty=="additional" && iRowIndex!=-1) {
+                                this->fnSetValue(iRowIndex, sCurrentProperty, sCurrentPropertyValue);
+                            }
+                            bMultiLineProperty = false;
+                        } else {
+                            sCurrentPropertyEnd += cChar;
+                            sCurrentPropertyValue += sCurrentPropertyEnd;
+                            sCurrentPropertyEnd = "";
+                        }
+                    } else {
+                        sCurrentPropertyEnd += cChar;
+                    }
+                } else {
+                    sCurrentPropertyValue += cChar;
+                }
+            }
+        }
+
     }
 
-    *this->poJsonArray = oJsonDocument.array();
-
     endResetModel();
-    return 1;
+
+    return iResult;
+}
+
+QVariant PasswordListModel::fnFind(QString sKey, QString sValue)
+{
+    for (int iIndex = 0; iIndex<this->poJsonArray->size(); iIndex++) {
+        QJsonObject oJsonObject = this->poJsonArray->at(iIndex).toObject();
+
+        if (oJsonObject[sKey]==sValue) {
+            return iIndex;
+        }
+    }
+
+    return -1;
+}
+
+void PasswordListModel::fnSetValue(int iIndex, QString sKey, QString sValue)
+{
+    QJsonObject oJsonObject = (*this->poJsonArray)[iIndex].toObject();
+
+    oJsonObject[sKey] = sValue;
+
+    this->poJsonArray->replace(iIndex, oJsonObject);
 }

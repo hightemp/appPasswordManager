@@ -10,6 +10,7 @@
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QDateTime>
+#include <QUrl>
 
 class PasswordListModel : public QAbstractListModel
 {
@@ -65,11 +66,13 @@ public slots:
     void fnRemoveRow(int iIndex);
     QVariant fnSize();
     QVariant fnToByteArray();
-    QVariant fnFromByteArray(QVariant oByteArray, QVariant iSyncMethod);
+    QVariant fnFromByteArray(QVariant oByteArray, QVariant iSyncMethod, bool bEncrypted = true);
     QVariant fnEncryptPassword();
     QVariant fnCheckPassword(QVariant oByteArray);
-    QVariant fnExport(QString sFilePath);
-    QVariant fnImport(QString sFilePath);
+    QVariant fnExport(QString sURL, int iType);
+    QVariant fnImport(QString sURL, int iType);
+    QVariant fnFind(QString sKey, QString sValue);
+    void fnUpdateValue(int iIndex, QString sKey, QString sValue);
 };
 
 #endif // PASSWORDLISTMODEL_H
