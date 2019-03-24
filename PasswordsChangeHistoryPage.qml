@@ -23,7 +23,7 @@ Component {
             placeholderText: "Filter.."
 
             onTextChanged: {
-                oPasswordListSortFilterProxyModel.setFilterFixedString(text);
+                oPasswordChangeHistoryListSortFilterProxyModel.setFilterFixedString(text);
             }
         }
 
