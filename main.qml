@@ -36,9 +36,12 @@ ApplicationWindow {
     Connections {
         target: applicationWindow
         onClosing: {
-            applicationWindow.hide();
-            close.accepted = false
-            console.log('onClosing', close.accepted);
+            console.log('onClosing');
+            if (sOSType != "Mobile") {
+                applicationWindow.hide();
+                close.accepted = false
+                console.log('onClosing', close.accepted);
+            }
         }
         onVisibilityChanged: {
            console.log("onVisibilityChanged", applicationWindow.visibility, applicationWindow.visible);
@@ -94,6 +97,7 @@ ApplicationWindow {
     PasswordSyncClient { id: passwordSyncClient }
 
     Keys.onReleased: {
+        console.log("Keys.onReleased", event.key);
         if (event.key == Qt.Key_Back) {
             console.log("Back button captured - wunderbar !")
             event.accepted = true
