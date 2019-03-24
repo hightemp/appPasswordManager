@@ -93,11 +93,11 @@ ApplicationWindow {
 
     PasswordSyncClient { id: passwordSyncClient }
 
-    Keys.onPressed: {
+    Keys.onReleased: {
         if (event.key == Qt.Key_Back) {
             console.log("Back button captured - wunderbar !")
             event.accepted = true
-            //Qt.quit();
+            Qt.quit();
         }
     }
 
