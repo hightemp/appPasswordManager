@@ -11,6 +11,7 @@
 #include <QJsonDocument>
 #include <QDateTime>
 #include <QUrl>
+#include "PasswordChangeHistoryListModel.h"
 
 class PasswordListModel : public QAbstractListModel
 {
@@ -18,9 +19,10 @@ class PasswordListModel : public QAbstractListModel
     Q_ENUMS(PasswordListModelRoles)
 
 public:
-    QJsonArray* poJsonArray = nullptr;
+    QJsonObject* poJsonObject = nullptr;
     QString sFilePath;
     QString sPassword;
+    PasswordChangeHistoryListModel* poPasswordChangeHistoryListModel;
 
 public:
 
@@ -40,6 +42,9 @@ public:
     ~PasswordListModel() override;
 
     void fnInit();
+    void fnClearPasswordsArray();
+    QJsonArray fnGetPasswordsArray() const;
+    void fnSetPasswordsArray(QJsonArray oJsonArray);
     QHash<int,QByteArray> roleNames() const override;
     QVariant data(const QModelIndex &oIndex, int iRole) const override;
     bool setData(const QModelIndex &oIndex, const QVariant &oValue, int iRole = Qt::EditRole) override;
