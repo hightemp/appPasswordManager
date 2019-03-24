@@ -61,8 +61,10 @@ ApplicationWindow {
 
         applicationWindow.visible = sOSType == "Mobile";
 
-        applicationWindow.setWidth(640);
-        applicationWindow.setHeight(480);
+        if (sOSType != "Mobile") {
+            applicationWindow.setWidth(640);
+            applicationWindow.setHeight(480);
+        }
         console.log('Set window position: ', oSettingsModel.fnGetStringValue("applicationWindow.x"), oSettingsModel.fnGetStringValue("applicationWindow.y"));
         applicationWindow.setX(oSettingsModel.fnGetStringValue("applicationWindow.x"));
         applicationWindow.setY(oSettingsModel.fnGetStringValue("applicationWindow.y"));
@@ -95,7 +97,7 @@ ApplicationWindow {
         if (event.key == Qt.Key_Back) {
             console.log("Back button captured - wunderbar !")
             event.accepted = true
-            Qt.quit();
+            //Qt.quit();
         }
     }
 

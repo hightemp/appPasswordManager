@@ -62,7 +62,7 @@ Component {
                     property bool isCurrent: ListView.isCurrentItem
 
                     width: view.width
-                    height: 95
+                    height: 120
 
                     Label {
                         padding: 10
