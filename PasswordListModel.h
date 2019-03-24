@@ -24,7 +24,7 @@ public:
     QJsonObject* poJsonObject = nullptr;
     QString sFilePath;
     QString sPassword;
-    PasswordChangeHistoryListModel* poPasswordChangeHistoryListModel;
+    PasswordChangeHistoryListModel* poPasswordChangeHistoryListModel = nullptr;
 
     QStringList oColumns = {
         "name",

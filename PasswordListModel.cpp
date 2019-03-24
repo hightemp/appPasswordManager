@@ -10,14 +10,18 @@ PasswordListModel::PasswordListModel(QObject *poParent) : QAbstractListModel(poP
 PasswordListModel::~PasswordListModel()
 {
     qDebug() << __FUNCTION__;
+
     delete this->poJsonObject;
 }
 
 void PasswordListModel::fnInit()
 {
+    qDebug() << __FUNCTION__;
+
     if (this->poJsonObject) {
         delete this->poJsonObject;
     }
+
     this->poJsonObject = new QJsonObject();
     (*this->poJsonObject)["passwords"] = QJsonArray();
     (*this->poJsonObject)["history"] = QJsonArray();
@@ -25,6 +29,7 @@ void PasswordListModel::fnInit()
     if (this->poPasswordChangeHistoryListModel) {
         delete this->poPasswordChangeHistoryListModel;
     }
+
     this->poPasswordChangeHistoryListModel = new PasswordChangeHistoryListModel();
     this->poPasswordChangeHistoryListModel->poPasswordListModel = this;
 }
