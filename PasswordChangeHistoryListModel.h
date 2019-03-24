@@ -8,6 +8,8 @@
 #include <QDebug>
 #include "PasswordListModel.h"
 
+class PasswordListModel;
+
 class PasswordChangeHistoryListModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -32,7 +34,7 @@ public:
         EventTypeRole
     };
 
-    explicit PasswordChangeHistoryListModel(PasswordListModel *poPasswordListModel, QObject *poParent = nullptr);
+    explicit PasswordChangeHistoryListModel(QObject *poParent = nullptr);
     ~PasswordChangeHistoryListModel() override;
 
     void fnClearHistoryArray();
@@ -52,7 +54,10 @@ public:
     bool hasChildren(const QModelIndex &oParent) const override;
 
 public slots:
-
+    void fnAddJsonObject(QString sEventType, QJsonObject oJsonObject);
+    void fnClear();
+    void fnRemoveRow(int iIndex);
+    void fnRestore(int iIndex);
 };
 
 #endif // PASSWORDCHANGEHISTORYLISTMODEL_H

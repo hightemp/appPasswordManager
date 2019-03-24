@@ -109,6 +109,7 @@ Component {
 
                     stackView.oPasswordsListViewModel = oPasswordListSortFilterProxyModel;
                     stackView.oServersListViewModel = oServersListModel;
+                    stackView.oPasswordsChangeHistoryListViewModel = oPasswordChangeHistoryListSortFilterProxyModel;
                     passwordSyncServer.host = oSettingsModel.fnGetStringValue("settingsPageServerHost", "0.0.0.0");
                     passwordSyncServer.port = oSettingsModel.fnGetStringValue("settingsPageServerPort", "3002");
                     passwordSyncServer.listen = true;

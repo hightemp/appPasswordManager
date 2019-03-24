@@ -34,6 +34,7 @@
 #include "Clipboard.h"
 #include "Styler.h"
 #include "ServersListModel.h"
+#include "PasswordChangeHistoryListSortFilterProxyModel.h"
 
 #define QT_NO_DEBUG_OUTPUT
 
@@ -86,6 +87,9 @@ int main(int argc, char *argv[])
     PasswordListSortFilterProxyModel oPasswordListSortFilterProxyModel;
     oPasswordListSortFilterProxyModel.setSourceModel(&oPasswordListModel);
 
+    PasswordChangeHistoryListSortFilterProxyModel oPasswordChangeHistoryListSortFilterProxyModel;
+    oPasswordChangeHistoryListSortFilterProxyModel.setSourceModel(oPasswordListModel.poPasswordChangeHistoryListModel);
+
     Clipboard oClipboard;
     oClipboard.fnSetClipboard(QGuiApplication::clipboard());
 
@@ -98,6 +102,8 @@ int main(int argc, char *argv[])
 
     oEngine.rootContext()->setContextProperty("oPasswordListModel", &oPasswordListModel);
     oEngine.rootContext()->setContextProperty("oPasswordListSortFilterProxyModel", &oPasswordListSortFilterProxyModel);
+    oEngine.rootContext()->setContextProperty("oPasswordChangeHistoryListModel", oPasswordListModel.poPasswordChangeHistoryListModel);
+    oEngine.rootContext()->setContextProperty("oPasswordChangeHistoryListSortFilterProxyModel", &oPasswordChangeHistoryListSortFilterProxyModel);
 
     oEngine.rootContext()->setContextProperty("oSettingsModel", &oSettingsModel);
     oEngine.rootContext()->setContextProperty("oServersListModel", &oServersListModel);

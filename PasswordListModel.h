@@ -13,6 +13,8 @@
 #include <QUrl>
 #include "PasswordChangeHistoryListModel.h"
 
+class PasswordChangeHistoryListModel;
+
 class PasswordListModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -79,6 +81,7 @@ public slots:
     QVariant fnImport(QString sURL, int iType);
     QVariant fnFind(QString sKey, QString sValue);
     void fnSetValue(int iIndex, QString sKey, QString sValue);
+    void fnRestoreFromJsonObject(QJsonObject oJsonObject);
 };
 
 #endif // PASSWORDLISTMODEL_H

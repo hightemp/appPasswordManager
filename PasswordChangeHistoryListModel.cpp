@@ -1,9 +1,7 @@
 #include "PasswordChangeHistoryListModel.h"
 
-PasswordChangeHistoryListModel::PasswordChangeHistoryListModel(PasswordListModel *poPasswordListModel, QObject *poParent):
-    QAbstractListModel(poParent),
-    poPasswordListModel(poPasswordListModel)
-    //poParent(poParent)
+PasswordChangeHistoryListModel::PasswordChangeHistoryListModel(QObject *poParent):
+    QAbstractListModel(poParent)
 {
     qDebug() << __FUNCTION__;
 }
@@ -192,4 +190,55 @@ bool PasswordChangeHistoryListModel::hasChildren(const QModelIndex &oParent) con
     qDebug() << __FUNCTION__;
 
     return false;
+}
+
+void PasswordChangeHistoryListModel::fnAddJsonObject(QString sEventType, QJsonObject oJsonObject)
+{
+    qDebug() << __FUNCTION__;
+
+    QJsonArray oHistoryJsonArray = this->fnGetHistoryArray();
+
+    int iPosition = oHistoryJsonArray.size();
+
+    beginInsertRows(QModelIndex(), iPosition, iPosition);
+
+    oJsonObject["timestamp"] = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss");
+    oJsonObject["eventType"] = sEventType;
+
+    QJsonValue oJsonValue(oJsonObject);
+
+    oHistoryJsonArray.insert(0, oJsonValue);
+
+    this->fnSetHistoryArray(oHistoryJsonArray);
+
+    endInsertRows();
+
+    //this->poPasswordListModel->fnSave();
+}
+
+void PasswordChangeHistoryListModel::fnClear()
+{
+    beginResetModel();
+
+    this->fnClearHistoryArray();
+
+    endResetModel();
+}
+
+void PasswordChangeHistoryListModel::fnRemoveRow(int iIndex)
+{
+    qDebug() << __FUNCTION__ << iIndex;
+
+    this->removeRows(iIndex, 1);
+}
+
+void PasswordChangeHistoryListModel::fnRestore(int iIndex)
+{
+     qDebug() << __FUNCTION__ << iIndex;
+
+     QJsonArray oHistoryJsonArray = this->fnGetHistoryArray();
+
+     QJsonObject oJsonObject = oHistoryJsonArray.at(iIndex).toObject();
+
+     this->poPasswordListModel->fnRestoreFromJsonObject(oJsonObject);
 }

@@ -106,7 +106,9 @@ ApplicationWindow {
 
         property var oPasswordsListViewModel
         property var oServersListViewModel
-        property var oHistoryListViewModel
+        property var oPasswordsChangeHistoryListViewModel
+
+        property int iHistroyRecordIndex;
 
         property int iEditedRecordIndex
         property bool bPasswordsListIsNewItem: false

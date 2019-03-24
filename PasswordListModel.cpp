@@ -25,7 +25,8 @@ void PasswordListModel::fnInit()
     if (this->poPasswordChangeHistoryListModel) {
         delete this->poPasswordChangeHistoryListModel;
     }
-    this->poPasswordChangeHistoryListModel = new PasswordChangeHistoryListModel(this);
+    this->poPasswordChangeHistoryListModel = new PasswordChangeHistoryListModel();
+    this->poPasswordChangeHistoryListModel->poPasswordListModel = this;
 }
 
 void PasswordListModel::fnClearPasswordsArray()
@@ -104,6 +105,9 @@ bool PasswordListModel::setData(const QModelIndex &oIndex, const QVariant &oValu
     if (oIndex.isValid() /*&& iRole == Qt::EditRole*/) {
         if (oIndex.row()<oPasswordsJsonArray.size()) {
             QJsonObject oJsonObject = oPasswordsJsonArray.at(oIndex.row()).toObject();
+
+            this->poPasswordChangeHistoryListModel->fnAddJsonObject("update", oJsonObject);
+
             if (iRole == NameRole) {
                 oJsonObject["name"] = oValue.toString();
             }
@@ -120,6 +124,7 @@ bool PasswordListModel::setData(const QModelIndex &oIndex, const QVariant &oValu
                 oJsonObject["id"] = oValue.toString();
             }
             oJsonObject["updatedAt"] = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss");
+
             QJsonValue oJsonValue(oJsonObject);
             oPasswordsJsonArray.replace(oIndex.row(), oJsonValue);
 
@@ -202,6 +207,7 @@ bool PasswordListModel::insertRows(int iPosition, int iRows, const QModelIndex &
         QJsonObject oJsonObject;
         oJsonObject["id"] = QDateTime::currentDateTime().toMSecsSinceEpoch(); //this->fnGenerateIndex();
         oJsonObject["createdAt"] = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss");
+
         QJsonValue oJsonValue(oJsonObject);
         oPasswordsJsonArray.insert(iPosition, oJsonValue);
     }
@@ -228,6 +234,8 @@ bool PasswordListModel::removeRows(int iPosition, int iRows, const QModelIndex &
     beginRemoveRows(QModelIndex(), iPosition, iPosition+iRows-1);
 
     for (int iRow = iPosition; iRow < iPosition+iRows; ++iRow) {
+        this->poPasswordChangeHistoryListModel->fnAddJsonObject("delete", oPasswordsJsonArray.at(iPosition).toObject());
+
         oPasswordsJsonArray.removeAt(iPosition);
         /*
         QJsonObject oJsonObject = this->poJsonArray->at(iRow).toObject();
@@ -610,6 +618,8 @@ QVariant PasswordListModel::fnImport(QString sURL, int iType)
 
     qDebug() << __FUNCTION__ << sFilePath << iType;
 
+    beginResetModel();
+
     if (!this->fnFileExists()) {
         endResetModel();
         qDebug() << "File doesn't exist";
@@ -625,8 +635,6 @@ QVariant PasswordListModel::fnImport(QString sURL, int iType)
     }
 
     int iResult = 1;
-
-    beginResetModel();
 
     if (iType==0 || iType==1 || iType==2) {
         iResult = this->fnFromByteArray(oFileObj.readAll(), iType, false).toInt();
@@ -754,6 +762,8 @@ QVariant PasswordListModel::fnImport(QString sURL, int iType)
 
 QVariant PasswordListModel::fnFind(QString sKey, QString sValue)
 {
+    qDebug() << __FUNCTION__;
+
     QJsonArray oPasswordsJsonArray = this->fnGetPasswordsArray();
 
     for (int iIndex = 0; iIndex<oPasswordsJsonArray.size(); iIndex++) {
@@ -769,6 +779,8 @@ QVariant PasswordListModel::fnFind(QString sKey, QString sValue)
 
 void PasswordListModel::fnSetValue(int iIndex, QString sKey, QString sValue)
 {
+    qDebug() << __FUNCTION__;
+
     QJsonArray oPasswordsJsonArray = this->fnGetPasswordsArray();
 
     QJsonObject oJsonObject = oPasswordsJsonArray[iIndex].toObject();
@@ -778,4 +790,33 @@ void PasswordListModel::fnSetValue(int iIndex, QString sKey, QString sValue)
     oPasswordsJsonArray.replace(iIndex, oJsonObject);
 
     this->fnSetPasswordsArray(oPasswordsJsonArray);
+}
+
+void PasswordListModel::fnRestoreFromJsonObject(QJsonObject oJsonObject)
+{
+    qDebug() << __FUNCTION__;
+
+    int iRecordIndex = this->fnFind("id", oJsonObject["id"].toString()).toInt();
+
+    if (iRecordIndex==-1) {
+        iRecordIndex = this->fnAddRow().toInt();
+    }
+
+    QString asColumns[] = {
+        "name",
+        "user",
+        "password",
+        "isDeleted",
+        "additional",
+        "id",
+        "sourceIndex",
+        "createdAt",
+        "updatedAt"
+    };
+
+    for (QString sColumn : asColumns) {
+        this->fnSetValue(iRecordIndex, sColumn, oJsonObject[sColumn].toString());
+    }
+
+    this->fnUpdate();
 }

@@ -40,7 +40,7 @@ Component {
                 id: passwordsChangeHistoryPageListView
                 width: parent.width
                 orientation: ListView.Vertical
-                model: stackView.oHistoryListViewModel
+                model: stackView.oPasswordsChangeHistoryListViewModel
                 focus: true
 
                 highlight: Rectangle {
@@ -52,7 +52,7 @@ Component {
 
                 onCurrentIndexChanged: {
                     console.log('onCurrentIndexChanged');
-                    stackView.iEditedRecordIndex = currentIndex;
+                    stackView.iHistroyRecordIndex = currentIndex;
                 }
 
                 delegate: Item {
@@ -62,7 +62,7 @@ Component {
                     property bool isCurrent: ListView.isCurrentItem
 
                     width: view.width
-                    height: 60
+                    height: 80
 
                     Label {
                         padding: 10
@@ -70,12 +70,23 @@ Component {
                         //anchors.centerIn: parent
 
                         renderType: Text.NativeRendering
-                        text: "<b>Name:</b>"+name+"<br>"+
-                              "<b>User:</b>"+user+"<br>"+
-                              "<b>Password:</b> "+password+"<br>"+
-                              "<b>Additional:</b> "+additional;
+                        text: "<b>Event time:</b> "+timestamp+"<br>"+
+                              "<b>Event type:</b> "+eventType+"<br>"+
+                              "<b>Name:</b> "+name+"<br>"+
+                              "<b>User:</b> "+user+"<br>"+
+                              "<b>Password:</b> "+password+"<br>"//+
+                              //"<b>Additional:</b> "+additional;
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            view.currentIndex = model.index;
+                        }
                     }
                 }
+
             }
         }
 
@@ -98,7 +109,7 @@ Component {
                     //Layout.fillWidth: true
 
                     onClicked: {
-
+                        oPasswordChangeHistoryListModel.fnRestore(stackView.iHistroyRecordIndex);
                     }
                 }
 
@@ -109,7 +120,7 @@ Component {
                     //Layout.fillWidth: true
 
                     onClicked: {
-
+                        passwordsChangeHistoryPageDeleteItemDialog.open();
                     }
                 }
             }
@@ -135,11 +146,22 @@ Component {
                     //Layout.fillWidth: true
 
                     onClicked: {
-
+                        oPasswordChangeHistoryListModel.fnClear();
                     }
                 }
             }
 
+        }
+
+        MessageDialog {
+            id: passwordsChangeHistoryPageDeleteItemDialog
+            title: qsTr("Delete item?")
+            standardButtons: Dialog.No | Dialog.Yes
+            text: "Delete item?"
+
+            onYes: {
+                oPasswordChangeHistoryListModel.fnRemoveRow(stackView.iHistroyRecordIndex);
+            }
         }
     }
 }

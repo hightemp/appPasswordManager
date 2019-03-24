@@ -15,6 +15,7 @@ bool PasswordChangeHistoryListSortFilterProxyModel::filterAcceptsRow(int iSource
                 || this->sourceModel()->data(iIndex, PasswordChangeHistoryListModel::UserRole).toString().contains(this->filterRegExp())
                 || this->sourceModel()->data(iIndex, PasswordChangeHistoryListModel::PasswordRole).toString().contains(this->filterRegExp())
                 || this->sourceModel()->data(iIndex, PasswordChangeHistoryListModel::AdditionalRole).toString().contains(this->filterRegExp())
+                || this->sourceModel()->data(iIndex, PasswordChangeHistoryListModel::TimestampRole).toString().contains(this->filterRegExp())
             );
 }
 
