@@ -19,6 +19,13 @@ void PasswordListModel::fnInit()
         delete this->poJsonObject;
     }
     this->poJsonObject = new QJsonObject();
+    (*this->poJsonObject)["passwords"] = QJsonArray();
+    (*this->poJsonObject)["history"] = QJsonArray();
+
+    if (this->poPasswordChangeHistoryListModel) {
+        delete this->poPasswordChangeHistoryListModel;
+    }
+    this->poPasswordChangeHistoryListModel = new PasswordChangeHistoryListModel(this);
 }
 
 void PasswordListModel::fnClearPasswordsArray()

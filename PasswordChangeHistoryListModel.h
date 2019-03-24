@@ -6,18 +6,19 @@
 #include <QJsonObject>
 #include <QException>
 #include <QDebug>
+#include "PasswordListModel.h"
 
 class PasswordChangeHistoryListModel : public QAbstractListModel
 {
     Q_OBJECT
-    Q_ENUMS(PasswordListModelRoles)
+    Q_ENUMS(PasswordChangeHistoryListModelRoles)
 
 public:
-    QJsonObject* poJsonObject = nullptr;
+    PasswordListModel* poPasswordListModel = nullptr;
 
 public:
 
-    enum PasswordListModelRoles {
+    enum PasswordChangeHistoryListModelRoles {
         NameRole = Qt::UserRole + 1,
         UserRole,
         PasswordRole,
@@ -27,12 +28,16 @@ public:
         SourceIndexRole,
         CreatedAtRole,
         UpdatedAtRole,
-        TimestampRole
+        TimestampRole,
+        EventTypeRole
     };
 
-    explicit PasswordChangeHistoryListModel(QJsonObject* poJsonObject, QObject *poParent = nullptr);
+    explicit PasswordChangeHistoryListModel(PasswordListModel *poPasswordListModel, QObject *poParent = nullptr);
     ~PasswordChangeHistoryListModel() override;
 
+    void fnClearHistoryArray();
+    QJsonArray fnGetHistoryArray() const;
+    void fnSetHistoryArray(QJsonArray oJsonArray);
     QHash<int,QByteArray> roleNames() const override;
     QVariant data(const QModelIndex &oIndex, int iRole) const override;
     bool setData(const QModelIndex &oIndex, const QVariant &oValue, int iRole = Qt::EditRole) override;
