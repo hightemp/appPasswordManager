@@ -26,6 +26,17 @@ public:
     QString sPassword;
     PasswordChangeHistoryListModel* poPasswordChangeHistoryListModel;
 
+    QStringList oColumns = {
+        "name",
+        "user",
+        "password",
+        "isDeleted",
+        "additional",
+        "id",
+        "sourceIndex",
+        "createdAt",
+        "updatedAt"
+    };
 public:
 
     enum PasswordListModelRoles {
@@ -70,7 +81,8 @@ public slots:
     QVariant fnLoad();
     QVariant fnSave();
     bool fnFileExists();
-    QVariant fnAddRow();
+    QVariant fnAddRow(QJsonObject oJsonObject={});
+    void fnUpdateRow(int iIndex, QJsonObject oNewJsonObject, bool bAddToHistory=true);
     void fnRemoveRow(int iIndex);
     QVariant fnSize();
     QVariant fnToByteArray();

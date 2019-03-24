@@ -359,12 +359,12 @@ QVariant PasswordListModel::fnLoad()
 
     QJsonDocument oJsonDocument = QJsonDocument::fromJson(sResult);
 
-    if (!oJsonDocument.isArray()) {
+    if (!oJsonDocument.isObject()) {
         endResetModel();
         return -2;
     }
 
-    this->fnSetPasswordsArray(oJsonDocument.array());
+    *this->poJsonObject = oJsonDocument.object();
 
     endResetModel();
 
@@ -381,9 +381,7 @@ QVariant PasswordListModel::fnSave()
         return -1;
     }
 
-    QJsonArray oPasswordsJsonArray = this->fnGetPasswordsArray();
-
-    QJsonDocument oJsonDocument(oPasswordsJsonArray);
+    QJsonDocument oJsonDocument(*this->poJsonObject);
 
     Encrypter oEncrypter;
     QByteArray sResult;
@@ -419,15 +417,43 @@ void PasswordListModel::fnRemoveRow(int iIndex)
     this->removeRows(iIndex, 1);
 }
 
-QVariant PasswordListModel::fnAddRow()
+QVariant PasswordListModel::fnAddRow(QJsonObject oJsonObject)
 {
     qDebug() << __FUNCTION__;
 
     int iSize = this->fnSize().toInt();
+    int iIndex = iSize-1;
 
     this->insertRows(iSize, 1);
 
-    return iSize-1;
+    this->fnUpdateRow(iIndex, oJsonObject, false);
+
+    return iIndex;
+}
+
+void PasswordListModel::fnUpdateRow(int iIndex, QJsonObject oNewJsonObject, bool bAddToHistory)
+{
+    qDebug() << __FUNCTION__;
+
+    QJsonArray oPasswordsJsonArray = this->fnGetPasswordsArray();
+
+    QJsonObject oJsonObject = oPasswordsJsonArray[iIndex].toObject();
+
+    this->poPasswordChangeHistoryListModel->fnAddJsonObject("update", oJsonObject);
+
+    foreach(const QString& sColumn, oNewJsonObject.keys()) {
+        if (this->oColumns.contains(sColumn)) {
+            oJsonObject[sColumn] = oNewJsonObject[sColumn];
+        }
+    }
+
+    oPasswordsJsonArray.replace(iIndex, oJsonObject);
+
+    this->fnSetPasswordsArray(oPasswordsJsonArray);
+
+    this->fnSave();
+
+    this->fnUpdate();
 }
 
 QVariant PasswordListModel::fnSize()
@@ -693,15 +719,13 @@ QVariant PasswordListModel::fnImport(QString sURL, int iType)
                     qDebug() << "Save property " << sCurrentProperty << sCurrentPropertyValue;
                     if (sCurrentProperty=="name") {
                         if (iType==3) {
-                            this->fnAddRow();
-                            iRowIndex = this->fnSize().toInt()-1;
+                            iRowIndex = this->fnAddRow().toInt();
                         }
                         if (iType==4 || iType==5) {
                             iRowIndex = this->fnFind(sCurrentProperty, sCurrentPropertyValue).toInt();
 
                             if (iRowIndex==-1) {
-                                this->fnAddRow();
-                                iRowIndex = this->fnSize().toInt()-1;
+                                iRowIndex = this->fnAddRow().toInt();
                             } else if (iType==5) {
                                 iRowIndex = -1;
                             }
@@ -799,24 +823,8 @@ void PasswordListModel::fnRestoreFromJsonObject(QJsonObject oJsonObject)
     int iRecordIndex = this->fnFind("id", oJsonObject["id"].toString()).toInt();
 
     if (iRecordIndex==-1) {
-        iRecordIndex = this->fnAddRow().toInt();
+        this->fnAddRow(oJsonObject);
+    } else {
+        this->fnUpdateRow(iRecordIndex, oJsonObject);
     }
-
-    QString asColumns[] = {
-        "name",
-        "user",
-        "password",
-        "isDeleted",
-        "additional",
-        "id",
-        "sourceIndex",
-        "createdAt",
-        "updatedAt"
-    };
-
-    for (QString sColumn : asColumns) {
-        this->fnSetValue(iRecordIndex, sColumn, oJsonObject[sColumn].toString());
-    }
-
-    this->fnUpdate();
 }

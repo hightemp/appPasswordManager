@@ -192,19 +192,18 @@ Component {
                 property int iServersCount;
 
                 onClicked: {
-                    if (stackView.bPasswordsListIsNewItem) {
-                        stackView.iEditedRecordIndex = oPasswordListModel.fnAddRow();
-                    }
+                    var oRecord = {
+                        "name": nameTextField.text,
+                        "user": userTextField.text,
+                        "password": generatedPasswordTextField.text != '' ? generatedPasswordTextField.text : passwordTextField.text,
+                        "additional": additionalTextArea.text
+                    };
 
-                    var oIndex = oPasswordListModel.index(stackView.iEditedRecordIndex, 0);
-                    oPasswordListModel.setData(oIndex, nameTextField.text, PasswordListModel.NameRole);
-                    oPasswordListModel.setData(oIndex, userTextField.text, PasswordListModel.UserRole);
-                    if (generatedPasswordTextField.text != '') {
-                        oPasswordListModel.setData(oIndex, generatedPasswordTextField.text, PasswordListModel.PasswordRole);
+                    if (stackView.bPasswordsListIsNewItem) {
+                        stackView.iEditedRecordIndex = oPasswordListModel.fnAddRow(oRecord);
                     } else {
-                        oPasswordListModel.setData(oIndex, passwordTextField.text, PasswordListModel.PasswordRole);
+                        oPasswordListModel.fnUpdateRow(stackView.iEditedRecordIndex, oRecord);
                     }
-                    oPasswordListModel.setData(oIndex, additionalTextArea.text, PasswordListModel.AdditionalRole);
 
                     if (oSettingsModel.fnGetBoolValue("settingsPageSynchronizeOnUpdate")) {
                         fnSyncOnUpdate();
