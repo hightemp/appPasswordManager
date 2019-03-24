@@ -198,9 +198,7 @@ void PasswordChangeHistoryListModel::fnAddJsonObject(QString sEventType, QJsonOb
 
     QJsonArray oHistoryJsonArray = this->fnGetHistoryArray();
 
-    int iPosition = oHistoryJsonArray.size();
-
-    beginInsertRows(QModelIndex(), iPosition, iPosition);
+    beginInsertRows(QModelIndex(), 0, 0);
 
     oJsonObject["timestamp"] = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss");
     oJsonObject["eventType"] = sEventType;
