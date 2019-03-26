@@ -43,15 +43,24 @@ Component {
                 orientation: ListView.Vertical
                 model: stackView.oPasswordsListViewModel
                 focus: true
+
                 highlight: Rectangle {
                     opacity: 0.5
                     color: "skyblue"
                 }
+
+                FontMetrics {
+                    id: passwordsListViewFontMetrics
+                    font.pixelSize: 12
+                }
+
                 highlightFollowsCurrentItem: true
+
                 onCurrentIndexChanged: {
                     console.log('onCurrentIndexChanged');
                     stackView.iEditedRecordIndex = currentIndex;
                 }
+
                 delegate: Item {
                     id: passwordsListDelegate
 
@@ -59,16 +68,22 @@ Component {
                     property bool isCurrent: ListView.isCurrentItem
 
                     width: view.width
-                    height: 50
+                    height: 20+
+                            passwordsListViewFontMetrics.height*(oSettingsModel.fnGetBoolValue("settingsPageShowCreatedAtInList") ? 1 : 0)+
+                            passwordsListViewFontMetrics.height*(oSettingsModel.fnGetBoolValue("settingsPageShowUpdatedAtInList") ? 1 : 0)+
+                            passwordsListViewFontMetrics.height+
+                            passwordsListViewFontMetrics.height*(oSettingsModel.fnGetBoolValue("settingsPageShowUserInList") ||
+                                oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList") ? 1 : 0)
 
                     Label {
                         padding: 10
                         anchors.fill: parent
+                        font.pixelSize: passwordsListViewFontMetrics.font.pixelSize
                         //anchors.centerIn: parent
 
                         renderType: Text.NativeRendering
-                        text: (oSettingsModel.fnGetBoolValue("settingsPageShowCreatedAtInList") ? "Created: " + createdAt + " " : "") +
-                              (oSettingsModel.fnGetBoolValue("settingsPageShowUpdatedAtInList") ? "Updated: " + updatedAt + " " : "") +
+                        text: (oSettingsModel.fnGetBoolValue("settingsPageShowCreatedAtInList") ? "Created: " + createdAt + "<br>" : "") +
+                              (oSettingsModel.fnGetBoolValue("settingsPageShowUpdatedAtInList") ? "Updated: " + updatedAt + "<br>" : "") +
                               "<b>"+name+"</b>"+
                               (oSettingsModel.fnGetBoolValue("settingsPageShowUserInList") ||
                                oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList") ? "<br>" : "" ) +

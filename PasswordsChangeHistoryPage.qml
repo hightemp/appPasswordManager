@@ -48,6 +48,11 @@ Component {
                     color: "skyblue"
                 }
 
+                FontMetrics {
+                    id: passwordsChangeHistoryPageListViewFontMetrics
+                    font.pixelSize: 10
+                }
+
                 highlightFollowsCurrentItem: true
 
                 onCurrentIndexChanged: {
@@ -62,11 +67,12 @@ Component {
                     property bool isCurrent: ListView.isCurrentItem
 
                     width: view.width
-                    height: 120
+                    height: 20+5*passwordsChangeHistoryPageListViewFontMetrics.height
 
                     Label {
                         padding: 10
                         anchors.fill: parent
+                        font.pixelSize: passwordsChangeHistoryPageListViewFontMetrics.font.pixelSize
                         //anchors.centerIn: parent
 
                         renderType: Text.NativeRendering
