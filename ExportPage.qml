@@ -208,8 +208,6 @@ Component {
                     ]
 
                     onClicked: {
-                        return;
-
                         var sExtension = oFilterExtension[exportPageNameFilterComboBox.currentIndex];
 
                         if (exportPageFileNameTextField.text.length==exportPageFileNameTextField.text.lastIndexOf(sExtension)+sExtension.length) {
