@@ -26,11 +26,15 @@ Component {
                 model: stackView.oServersListViewModel
                 focus: true
 
+                highlightFollowsCurrentItem: false
                 highlight: Rectangle {
+                    opacity: 0.5
                     color: "skyblue"
+                    width: ListView.view.width
+                    height: ListView.view.currentItem.height
+                    y: ListView.view.currentItem.y
+                    //z: Infinity
                 }
-
-                highlightFollowsCurrentItem: true
 
                 delegate: Item {
                     id: serversListDelegate

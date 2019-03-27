@@ -56,6 +56,11 @@ Component {
                 bottom: exportPageBottomColumnLayout.top
             }
 
+            padding: {
+                top: 2
+                bottom: 2
+            }
+
             ListView {
                 id: exportPageListView
                 width: parent.width
@@ -63,17 +68,20 @@ Component {
                 model: stackView.oExportFilesListModel
                 focus: true
 
+                highlightFollowsCurrentItem: false
                 highlight: Rectangle {
                     opacity: 0.5
                     color: "skyblue"
+                    width: ListView.view.width
+                    height: 20+exportPageFontMetrics.height
+                    y: ListView.view.currentItem.y
+                    //z: Infinity
                 }
 
                 FontMetrics {
                     id: exportPageFontMetrics
                     font.pixelSize: 12
                 }
-
-                highlightFollowsCurrentItem: true
 
                 delegate: Item {
                     id: exportPageDelegate
@@ -84,9 +92,22 @@ Component {
                     width: view.width
                     height: 20+exportPageFontMetrics.height
 
+                    Image {
+                        id: icon
+                        source: "images/folder.png"
+                        width: 32
+                        height: 32
+                    }
+
                     Label {
                         padding: 10
-                        anchors.fill: parent
+                        anchors {
+                            top: parent.top
+                            left: icon.right
+                            bottom: parent.bottom
+                            right: parent.right
+                        }
+
                         font.pixelSize: exportPageFontMetrics.font.pixelSize
                         //anchors.centerIn: parent
 
