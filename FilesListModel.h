@@ -43,6 +43,7 @@ public slots:
     void fnSetPath(QString sPath);
     QString fnGetCurrentPath();
     void fnUp();
+    void fnUpdate();
 
 };
 

@@ -64,7 +64,6 @@ ApplicationWindow {
 
         stackView.oExportFilesListModel = oExportFilesListModel;
         stackView.oImportFilesListModel = oImportFilesListModel;
-        console.log('stackView.oExportFilesListModel', stackView.oExportFilesListModel, oExportFilesListModel, oPasswordListSortFilterProxyModel);
 
         applicationWindow.visible = sOSType == "Mobile";
 

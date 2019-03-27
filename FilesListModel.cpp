@@ -2,8 +2,10 @@
 
 FilesListModel::FilesListModel(QObject *poParent) : QAbstractListModel (poParent)
 {
+    qDebug() << __FUNCTION__;
+
     this->oCurrentPath = QDir(QDir::homePath());
-    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::NoDotAndDotDot);
+    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
 }
 
 FilesListModel::~FilesListModel()
@@ -107,7 +109,7 @@ QModelIndex FilesListModel::parent(const QModelIndex &oChild) const
 
 int FilesListModel::rowCount(const QModelIndex &oParent) const
 {
-    int iRows = this->oCurrentPath.count();
+    int iRows = this->oFileInfoList.size();
 
     qDebug() << __FUNCTION__ << iRows;
 
@@ -140,11 +142,10 @@ void FilesListModel::fnOpenDir(int iIndex)
         return;
     }
 
-    beginResetModel();
+    this->oCurrentPath.cd(this->oFileInfoList[iIndex].fileName());
+    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+    //this->fnSetPath(this->fnGetCurrentPath()+"/"+this->oFileInfoList[iIndex].fileName());
 
-    this->fnSetPath(this->oFileInfoList[iIndex].fileName());
-
-    endResetModel();
     /*
     for (int i = 0; i < list.size(); ++i) {
         QFileInfo fileInfo = list.at(i);
@@ -157,10 +158,10 @@ void FilesListModel::fnOpenDir(int iIndex)
 
 void FilesListModel::fnSetPath(QString sPath)
 {
-    qDebug() << __FUNCTION__;
+    qDebug() << __FUNCTION__ << sPath;
 
     this->oCurrentPath.setPath(sPath);
-    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::NoDotAndDotDot);
+    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
 }
 
 QString FilesListModel::fnGetCurrentPath()
@@ -175,4 +176,11 @@ void FilesListModel::fnUp()
     qDebug() << __FUNCTION__;
 
     this->oCurrentPath.cdUp();
+    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+}
+
+void FilesListModel::fnUpdate()
+{
+    beginResetModel();
+    endResetModel();
 }

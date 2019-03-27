@@ -11,21 +11,40 @@ Component {
         RowLayout {
             id: exportPageTopRowLayout
             spacing: 2
+            width: parent.width
 
             TextField {
                 id: exportPagePathTextField
+
                 Layout.fillWidth: true
                 text: stackView.oExportFilesListModel.fnGetCurrentPath()
                 selectByMouse: true
+
+                anchors {
+
+                }
+
+                Keys.onEnterPressed: {
+                    oExportFilesListModel.fnSetPath(exportPagePathTextField.text);
+                    oExportFilesListModel.fnUpdate();
+                }
+                Keys.onReturnPressed: {
+                    oExportFilesListModel.fnSetPath(exportPagePathTextField.text);
+                    oExportFilesListModel.fnUpdate();
+                }
             }
 
             Button {
                 id: exportPageUpButton
-                text: "\u21E7"
+                text: "Up"
+
                 onClicked: {
                     oExportFilesListModel.fnUp();
+                    exportPagePathTextField.text = oExportFilesListModel.fnGetCurrentPath();
+                    oExportFilesListModel.fnUpdate();
                 }
             }
+
         }
 
         ScrollView {
@@ -87,11 +106,15 @@ Component {
 
                         onDoubleClicked: {
                             view.currentIndex = model.index;
+
                             if (model.isDir) {
                                 oExportFilesListModel.fnOpenDir(model.index);
+                                exportPagePathTextField.text = oExportFilesListModel.fnGetCurrentPath();
                             } else {
                                 exportPageFileNameTextField.text = fileName;
                             }
+
+                            oExportFilesListModel.fnUpdate();
                         }
                     }
                 }
@@ -160,8 +183,14 @@ Component {
                     onClicked: {
                         return;
 
+                        var sExtension = oFilterExtension[exportPageNameFilterComboBox.currentIndex];
+
+                        if (exportPageFileNameTextField.text.length==exportPageFileNameTextField.text.lastIndexOf(sExtension)+sExtension.length) {
+                            sExtension = "";
+                        }
+
                         oPasswordListModel.fnExport(
-                            oExportFilesListModel.fnGetCurrentPath()+'/'+exportPageFileNameTextField.text+oFilterExtension[exportPageNameFilterComboBox.currentIndex],
+                            oExportFilesListModel.fnGetCurrentPath()+'/'+exportPageFileNameTextField.text+sExtension,
                             exportPageNameFilterComboBox.currentIndex
                         );
 

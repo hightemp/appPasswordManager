@@ -105,7 +105,6 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine oEngine(QUrl("qrc:/main.qml"));
 
     qDebug() << sPasswordsFilePath;
-    qDebug() << &oExportFilesListModel;
 
     oEngine.rootContext()->setContextProperty("oClipboard", &oClipboard);
 
