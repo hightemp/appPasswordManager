@@ -592,9 +592,9 @@ QVariant PasswordListModel::fnCheckPassword(QVariant oByteArray)
     return oResult == this->sPassword;
 }
 
-QVariant PasswordListModel::fnExport(QString sURL, int iType)
+QVariant PasswordListModel::fnExport(QString sFilePath, int iType)
 {
-    QString sFilePath = QUrl(sURL).toLocalFile();
+    //QString sFilePath = QUrl(sURL).toLocalFile();
 
     qDebug() << __FUNCTION__ << sFilePath;
 
@@ -643,9 +643,9 @@ QVariant PasswordListModel::fnExport(QString sURL, int iType)
     return 1;
 }
 
-QVariant PasswordListModel::fnImport(QString sURL, int iType)
+QVariant PasswordListModel::fnImport(QString sFilePath, int iType)
 {
-    QString sFilePath = QUrl(sURL).toLocalFile();
+    //QString sFilePath = QUrl(sURL).toLocalFile();
 
     qDebug() << __FUNCTION__ << sFilePath << iType;
 

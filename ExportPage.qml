@@ -214,6 +214,7 @@ Component {
                             sExtension = "";
                         }
 
+                        console.log(oExportFilesListModel.fnGetCurrentPath()+'/'+exportPageFileNameTextField.text+sExtension);
                         oPasswordListModel.fnExport(
                             oExportFilesListModel.fnGetCurrentPath()+'/'+exportPageFileNameTextField.text+sExtension,
                             exportPageNameFilterComboBox.currentIndex
