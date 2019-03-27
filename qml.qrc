@@ -16,5 +16,7 @@
         <file>PasswordsChangeHistoryPage.qml</file>
         <file>ExportPage.qml</file>
         <file>ImportPage.qml</file>
+        <file>images/folder.svg</file>
+        <file>images/none.svg</file>
     </qresource>
 </RCC>

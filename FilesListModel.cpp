@@ -5,7 +5,7 @@ FilesListModel::FilesListModel(QObject *poParent) : QAbstractListModel (poParent
     qDebug() << __FUNCTION__;
 
     this->oCurrentPath = QDir(QDir::homePath());
-    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot, QDir::Type | QDir::Name);
 }
 
 FilesListModel::~FilesListModel()
@@ -143,7 +143,7 @@ void FilesListModel::fnOpenDir(int iIndex)
     }
 
     this->oCurrentPath.cd(this->oFileInfoList[iIndex].fileName());
-    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot, QDir::Type | QDir::Name);
     //this->fnSetPath(this->fnGetCurrentPath()+"/"+this->oFileInfoList[iIndex].fileName());
 
     /*
@@ -161,7 +161,7 @@ void FilesListModel::fnSetPath(QString sPath)
     qDebug() << __FUNCTION__ << sPath;
 
     this->oCurrentPath.setPath(sPath);
-    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot, QDir::Type | QDir::Name);
 }
 
 QString FilesListModel::fnGetCurrentPath()
@@ -176,7 +176,7 @@ void FilesListModel::fnUp()
     qDebug() << __FUNCTION__;
 
     this->oCurrentPath.cdUp();
-    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot, QDir::Type | QDir::Name);
 }
 
 void FilesListModel::fnUpdate()

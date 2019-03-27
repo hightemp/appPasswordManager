@@ -12,6 +12,7 @@ Component {
             id: exportPageTopRowLayout
             spacing: 2
             width: parent.width
+            z: Infinity
 
             TextField {
                 id: exportPagePathTextField
@@ -94,9 +95,12 @@ Component {
 
                     Image {
                         id: icon
-                        source: "images/folder.png"
+                        source: isDir ? "images/folder.svg" : "images/none.svg"
                         width: 32
                         height: 32
+                        anchors {
+                            left: parent.left
+                        }
                     }
 
                     Label {
@@ -120,9 +124,11 @@ Component {
 
                         onClicked: {
                             view.currentIndex = model.index;
+                            /*
                             if (!model.isDir) {
                                 exportPageFileNameTextField.text = fileName;
                             }
+                            */
                         }
 
                         onDoubleClicked: {
