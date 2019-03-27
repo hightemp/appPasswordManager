@@ -62,6 +62,10 @@ ApplicationWindow {
     {
         console.log('fnStart');
 
+        stackView.oExportFilesListModel = oExportFilesListModel;
+        stackView.oImportFilesListModel = oImportFilesListModel;
+        console.log('stackView.oExportFilesListModel', stackView.oExportFilesListModel, oExportFilesListModel, oPasswordListSortFilterProxyModel);
+
         applicationWindow.visible = sOSType == "Mobile";
 
         if (sOSType != "Mobile") {
@@ -110,11 +114,14 @@ ApplicationWindow {
         initialItem: masterPasswordEnterPage
         anchors.fill: parent
 
+        property var oExportFilesListModel
+        property var oImportFilesListModel
+
         property var oPasswordsListViewModel
         property var oServersListViewModel
         property var oPasswordsChangeHistoryListViewModel
 
-        property int iHistroyRecordIndex;
+        property int iHistroyRecordIndex
 
         property int iEditedRecordIndex
         property bool bPasswordsListIsNewItem: false
@@ -153,6 +160,10 @@ ApplicationWindow {
         MasterPasswordEnterPage { id: masterPasswordEnterPage }
 
         PasswordsListViewPage { id: passwordsListViewPage }
+
+        ExportPage { id: exportPage }
+
+        ImportPage { id: importPage }
 
         PasswordsChangeHistoryPage { id: passwordsChangeHistoryPage }
 

@@ -14,5 +14,7 @@
         <file>ServersListViewPage.qml</file>
         <file>ChangePasswordPage.qml</file>
         <file>PasswordsChangeHistoryPage.qml</file>
+        <file>ExportPage.qml</file>
+        <file>ImportPage.qml</file>
     </qresource>
 </RCC>

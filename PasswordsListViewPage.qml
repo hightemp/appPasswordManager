@@ -149,7 +149,7 @@ Component {
                     //Layout.fillWidth: true
 
                     onClicked: {
-                        passwordsListViewPageExportFileDialog.open();
+                        stackView.push(exportPage);
                     }
                 }
 
@@ -160,7 +160,7 @@ Component {
                     //Layout.fillWidth: true
 
                     onClicked: {
-                        passwordsListViewPageImportFileDialog.open();
+                        stackView.push(importPage);
                     }
                 }
 

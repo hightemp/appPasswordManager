@@ -22,7 +22,8 @@ SOURCES += main.cpp \
     SettingsModel.cpp \
     Styler.cpp \
     PasswordChangeHistoryListModel.cpp \
-    PasswordChangeHistoryListSortFilterProxyModel.cpp
+    PasswordChangeHistoryListSortFilterProxyModel.cpp \
+    FilesListModel.cpp
 
 HEADERS += \
     PasswordListModel.h \
@@ -33,7 +34,8 @@ HEADERS += \
     SettingsModel.h \
     Styler.h \
     PasswordChangeHistoryListModel.h \
-    PasswordChangeHistoryListSortFilterProxyModel.h
+    PasswordChangeHistoryListSortFilterProxyModel.h \
+    FilesListModel.h
 
 RESOURCES += qml.qrc
 

@@ -35,6 +35,7 @@
 #include "Styler.h"
 #include "ServersListModel.h"
 #include "PasswordChangeHistoryListSortFilterProxyModel.h"
+#include "FilesListModel.h"
 
 #define QT_NO_DEBUG_OUTPUT
 
@@ -51,6 +52,7 @@ int main(int argc, char *argv[])
     QString sConfigFileName = ".appPasswordManager.cfg";
     QString sPasswordsFileName = ".appPasswordManager.pwd";
 
+    /*
     if (QSysInfo::kernelType()=="winnt") {
         sConfigFilePath = QDir::homePath() + "\\" + sConfigFileName;
         sPasswordsFilePath = QDir::homePath() + "\\" + sPasswordsFileName;
@@ -61,6 +63,9 @@ int main(int argc, char *argv[])
         sConfigFilePath = QDir::homePath() + "/" + sConfigFileName;
         sPasswordsFilePath = QDir::homePath() + "/" + sPasswordsFileName;
     }
+    */
+    sConfigFilePath = QDir::homePath() + "/" + sConfigFileName;
+    sPasswordsFilePath = QDir::homePath() + "/" + sPasswordsFileName;
 
     qmlRegisterType<PasswordListModel>("PasswordListModel", 1, 0, "PasswordListModel");
 
@@ -93,12 +98,19 @@ int main(int argc, char *argv[])
     Clipboard oClipboard;
     oClipboard.fnSetClipboard(QGuiApplication::clipboard());
 
+    FilesListModel oExportFilesListModel;
+    FilesListModel oImportFilesListModel;
+
 
     QQmlApplicationEngine oEngine(QUrl("qrc:/main.qml"));
 
     qDebug() << sPasswordsFilePath;
+    qDebug() << &oExportFilesListModel;
 
     oEngine.rootContext()->setContextProperty("oClipboard", &oClipboard);
+
+    oEngine.rootContext()->setContextProperty("oExportFilesListModel", &oExportFilesListModel);
+    oEngine.rootContext()->setContextProperty("oImportFilesListModel", &oImportFilesListModel);
 
     oEngine.rootContext()->setContextProperty("oPasswordListModel", &oPasswordListModel);
     oEngine.rootContext()->setContextProperty("oPasswordListSortFilterProxyModel", &oPasswordListSortFilterProxyModel);
