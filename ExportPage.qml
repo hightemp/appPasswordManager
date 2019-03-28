@@ -95,7 +95,7 @@ Component {
 
                     Image {
                         id: icon
-                        source: isDir ? "images/folder.svg" : "images/none.svg"
+                        source: isDir ? "qrc:/images/folder.svg" : "qrc:/images/none.svg"
                         width: 32
                         height: 32
                         anchors {
@@ -210,15 +210,18 @@ Component {
                     onClicked: {
                         var sExtension = oFilterExtension[exportPageNameFilterComboBox.currentIndex];
 
-                        if (exportPageFileNameTextField.text.length==exportPageFileNameTextField.text.lastIndexOf(sExtension)+sExtension.length) {
+                        if (exportPageFileNameTextField.text.lastIndexOf(sExtension)!=-1
+                            && exportPageFileNameTextField.text.length==exportPageFileNameTextField.text.lastIndexOf(sExtension)+sExtension.length) {
                             sExtension = "";
                         }
 
-                        console.log(oExportFilesListModel.fnGetCurrentPath()+'/'+exportPageFileNameTextField.text+sExtension);
+                        console.log(oExportFilesListModel.fnGetCurrentPath(), exportPageFileNameTextField.text, sExtension);
                         oPasswordListModel.fnExport(
                             oExportFilesListModel.fnGetCurrentPath()+'/'+exportPageFileNameTextField.text+sExtension,
                             exportPageNameFilterComboBox.currentIndex
                         );
+
+                        oExportFilesListModel.fnUpdate();
 
                         stackView.pop();
                     }

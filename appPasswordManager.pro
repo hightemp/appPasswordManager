@@ -1,6 +1,9 @@
 QT += quick qml websockets #quickcontrols2
+QT += svg xml
 !no_desktop: QT += widgets
 CONFIG += c++11
+
+QTPLUGIN += qsvg
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings

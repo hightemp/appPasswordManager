@@ -24,6 +24,7 @@
 #include <QtQuick/QQuickWindow>
 #include <QQmlContext>
 
+#include <QtSvg>
 #include <QDir>
 #include <QIcon>
 #include <QQuickView>
