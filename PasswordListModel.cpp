@@ -838,7 +838,7 @@ void PasswordListModel::fnRestoreFromJsonObject(QJsonObject oJsonObject)
 {
     qDebug() << __FUNCTION__;
 
-    int iRecordIndex = this->fnFind("id", oJsonObject["id"].toString()).toInt();
+    int iRecordIndex = this->fnFind("id", QString::number(oJsonObject["id"].toDouble(), 'f', 0)).toInt();
 
     if (iRecordIndex==-1) {
         this->fnAddRow(oJsonObject);
