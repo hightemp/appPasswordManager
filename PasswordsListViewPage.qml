@@ -39,6 +39,8 @@ Component {
                 bottom: passwordsListViewPageBottomColumnLayout.top
             }
 
+            clip: true
+
             ListView {
                 id: passwordsListView
                 width: parent.width
@@ -51,8 +53,8 @@ Component {
                     opacity: 0.5
                     color: "skyblue"
                     width: ListView.view ? ListView.view.width : 0
-                    height: ListView.view ? ListView.view.currentItem.height : 0
-                    y: ListView.view ? ListView.view.currentItem.y : 0
+                    height: ListView.view && ListView.view.currentItem ? ListView.view.currentItem.height : 0
+                    y: ListView.view && ListView.view.currentItem ? ListView.view.currentItem.y : 0
                     //z: Infinity
                 }
 
@@ -77,8 +79,12 @@ Component {
                             passwordsListViewFontMetrics.height*(oSettingsModel.fnGetBoolValue("settingsPageShowCreatedAtInList") ? 1 : 0)+
                             passwordsListViewFontMetrics.height*(oSettingsModel.fnGetBoolValue("settingsPageShowUpdatedAtInList") ? 1 : 0)+
                             passwordsListViewFontMetrics.height+
-                            passwordsListViewFontMetrics.height*(oSettingsModel.fnGetBoolValue("settingsPageShowUserInList") ||
-                                oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList") ? 1 : 0)
+                            passwordsListViewFontMetrics.height*(
+                                oSettingsModel.fnGetBoolValue("settingsPageShowUserInList")
+                                || oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList")
+                                || oSettingsModel.fnGetBoolValue("settingsPageShowIdInList")
+                                ? 1 : 0
+                            )
 
                     Label {
                         padding: 10
@@ -92,8 +98,9 @@ Component {
                               "<b>"+name+"</b>"+
                               (oSettingsModel.fnGetBoolValue("settingsPageShowUserInList") ||
                                oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList") ? "<br>" : "" ) +
-                              (oSettingsModel.fnGetBoolValue("settingsPageShowUserInList") ? "<b>User:</b> "+user : "") +
-                              (oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList") ? " <b>Password:</b> "+password : "")
+                              (oSettingsModel.fnGetBoolValue("settingsPageShowIdInList") ? "<b>Id:</b> "+id : " ") +
+                              (oSettingsModel.fnGetBoolValue("settingsPageShowUserInList") ? "<b>User:</b> "+user : " ") +
+                              (oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList") ? "<b>Password:</b> "+password : "")
                     }
 
                     MouseArea {
@@ -270,6 +277,7 @@ Component {
                         stackView.settingsPageSynchronizeOnUpdate = oSettingsModel.fnGetBoolValue("settingsPageSynchronizeOnUpdate");
                         stackView.settingsPageShowCreatedAtInList = oSettingsModel.fnGetBoolValue("settingsPageShowCreatedAtInList");
                         stackView.settingsPageShowUpdatedAtInList = oSettingsModel.fnGetBoolValue("settingsPageShowUpdatedAtInList");
+                        stackView.settingsPageShowIdInList = oSettingsModel.fnGetBoolValue("settingsPageShowIdInList");
                         stackView.settingsPageShowUserInList = oSettingsModel.fnGetBoolValue("settingsPageShowUserInList");
                         stackView.settingsPageShowPasswordInList = oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList");
                         //stackView.settingsPageStyleCurrentIndex = oSettingsModel.fnGetIntValue("settingsPageStyle");

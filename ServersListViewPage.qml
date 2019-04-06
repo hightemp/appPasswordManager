@@ -19,6 +19,9 @@ Component {
                 left: parent.left
                 bottom: serversListViewPageBottomColumnLayout.top
             }
+
+            clip: true
+
             ListView {
                 id: serversListView
                 width: parent.width
@@ -31,8 +34,8 @@ Component {
                     opacity: 0.5
                     color: "skyblue"
                     width: ListView.view ? ListView.view.width : 0
-                    height: ListView.view ? ListView.view.currentItem.height : 0
-                    y: ListView.view ? ListView.view.currentItem.y : 0
+                    height: ListView.view && ListView.view.currentItem ? ListView.view.currentItem.height : 0
+                    y: ListView.view && ListView.view.currentItem ? ListView.view.currentItem.y : 0
                     //z: Infinity
                 }
 

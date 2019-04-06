@@ -130,6 +130,7 @@ ApplicationWindow {
         property string sAdditional: ""
 
         property bool settingsPageSynchronizeOnUpdate
+        property bool settingsPageShowIdInList
         property bool settingsPageShowUserInList
         property bool settingsPageShowPasswordInList
         property bool settingsPageShowCreatedAtInList

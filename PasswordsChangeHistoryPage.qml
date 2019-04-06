@@ -13,6 +13,8 @@ Component {
         TextField {
             id: passwordsChangeHistoryPageFilterTextField
 
+            z: Infinity
+
             anchors {
                 right: parent.right
                 top: parent.top
@@ -35,6 +37,8 @@ Component {
                 left: parent.left
                 bottom: passwordsChangeHistoryPageBottomColumnLayout.top
             }
+
+            clip: true
 
             ListView {
                 id: passwordsChangeHistoryPageListView

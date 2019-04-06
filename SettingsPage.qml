@@ -34,6 +34,11 @@ Component {
                     checked: stackView.settingsPageSynchronizeOnUpdate
                 }
                 CheckBox {
+                    id: settingsPageShowIdInList
+                    text: "Show id in list"
+                    checked: stackView.settingsPageShowIdInList
+                }
+                CheckBox {
                     id: settingsPageShowUserInList
                     text: "Show user in list"
                     checked: stackView.settingsPageShowUserInList
@@ -137,6 +142,7 @@ Component {
                         oSettingsModel.fnUpdateBoolValue("settingsPageSynchronizeOnUpdate", settingsPageSynchronizeOnUpdate.checked);
                         oSettingsModel.fnUpdateBoolValue("settingsPageShowCreatedAtInList", settingsPageShowCreatedAtInList.checked);
                         oSettingsModel.fnUpdateBoolValue("settingsPageShowUpdatedAtInList", settingsPageShowUpdatedAtInList.checked);
+                        oSettingsModel.fnUpdateBoolValue("settingsPageShowIdInList", settingsPageShowIdInList.checked);
                         oSettingsModel.fnUpdateBoolValue("settingsPageShowUserInList", settingsPageShowUserInList.checked);
                         oSettingsModel.fnUpdateBoolValue("settingsPageShowPasswordInList", settingsPageShowPasswordsInList.checked);
                         //oSettingsModel.fnUpdateIntValue("settingsPageStyle", settingsPageStyle.currentIndex);
@@ -147,8 +153,8 @@ Component {
                         passwordSyncServer.port = settingsPageServerPort.text;
                         console.log('passwordSyncServer.listen', passwordSyncServer.listen);
                         //oStyler.fnSetStyle(settingsPageStyle.currentText);
-                        //oPasswordListModel.fnUpdate();
-                        //oSettingsModel.fnSave();
+                        oPasswordListModel.fnUpdate();
+                        oSettingsModel.fnSave();
                         //stackView.pop();
                     }
 
@@ -157,8 +163,6 @@ Component {
                         passwordSyncServer.onListenChanged.disconnect(settingsPageSaveButton.fnOnSettingsPageSaveButton);
                         passwordSyncServer.listen = true;
                         console.log('fnOnSettingsPageSaveButton passwordSyncServer.listen', passwordSyncServer.listen);
-                        oPasswordListModel.fnUpdate();
-                        oSettingsModel.fnSave();
                     }
                 }
             }

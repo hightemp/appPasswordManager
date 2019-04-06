@@ -57,6 +57,8 @@ Component {
                 bottom: exportPageBottomColumnLayout.top
             }
 
+            clip: true
+
             padding: {
                 top: 2
                 bottom: 2
@@ -75,7 +77,7 @@ Component {
                     color: "skyblue"
                     width: ListView.view ? ListView.view.width : 0
                     height: 20+exportPageFontMetrics.height
-                    y: ListView.view ? ListView.view.currentItem.y : 0
+                    y: ListView.view && ListView.view.currentItem ? ListView.view.currentItem.y : 0
                     //z: Infinity
                 }
 
