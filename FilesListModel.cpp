@@ -182,7 +182,7 @@ void FilesListModel::fnUp()
 
 void FilesListModel::fnUpdate()
 {
-    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot, QDir::Type);
+    this->oFileInfoList = this->oCurrentPath.entryInfoList(QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot, QDir::DirsFirst | QDir::Name);
 
     beginResetModel();
     endResetModel();
