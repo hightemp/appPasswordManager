@@ -178,6 +178,26 @@ Component {
                 id: exportPageNameFilterComboBox
                 Layout.fillWidth: true
                 model: [ "JSON (*.json)", "TEXT (*.txt)" ]
+
+                delegate: ItemDelegate {
+                    id: control
+                    width: parent.width
+
+                    contentItem: Text {
+                        text: modelData
+                        color: "#000000"
+                        font: control.font
+                        elide: Text.ElideRight
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    background: Rectangle {
+                        anchors.fill: control
+                        color: control.highlighted ? "skyblue" : "transparent"
+                    }
+
+                    highlighted: exportPageNameFilterComboBox.highlightedIndex === index
+                }
             }
 
             RowLayout {

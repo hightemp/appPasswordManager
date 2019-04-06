@@ -90,7 +90,7 @@ public slots:
     QVariant fnEncryptPassword();
     QVariant fnCheckPassword(QVariant oByteArray);
     QVariant fnExport(QString sURL, int iType);
-    QVariant fnImport(QString sURL, int iType);
+    QVariant fnImport(QString sURL, int iSyncType);
     QVariant fnFind(QString sKey, QString sValue);
     void fnSetValue(int iIndex, QString sKey, QString sValue);
     void fnRestoreFromJsonObject(QJsonObject oJsonObject);

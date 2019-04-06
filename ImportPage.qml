@@ -1,6 +1,7 @@
 import QtQuick 2.9
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
+import QtQuick.Controls.Styles 1.4
 
 Component {
     id: importPage
@@ -178,6 +179,26 @@ Component {
                 id: importPageNameFilterComboBox
                 Layout.fillWidth: true
                 model: [ "JSON Replace (*.json)", "JSON Merge (*.json)", "JSON Add (*.json)", "TEXT Replace (*.txt)", "TEXT Merge (*.txt)", "TEXT Add (*.txt)" ]
+
+                delegate: ItemDelegate {
+                    id: control
+                    width: parent.width
+
+                    contentItem: Text {
+                        text: modelData
+                        color: "#000000"
+                        font: control.font
+                        elide: Text.ElideRight
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    background: Rectangle {
+                        anchors.fill: control
+                        color: control.highlighted ? "skyblue" : "transparent"
+                    }
+
+                    highlighted: importPageNameFilterComboBox.highlightedIndex === index
+                }
             }
 
             RowLayout {
@@ -202,26 +223,10 @@ Component {
 
                     enabled: false
 
-                    property var oFilterExtension: [
-                        ".json",
-                        ".json",
-                        ".json",
-                        ".txt",
-                        ".txt",
-                        ".txt"
-                    ]
-
                     onClicked: {
-                        var sExtension = oFilterExtension[importPageNameFilterComboBox.currentIndex];
-
-                        if (importPageFileNameTextField.text.lastIndexOf(sExtension)!=-1
-                            && importPageFileNameTextField.text.length==importPageFileNameTextField.text.lastIndexOf(sExtension)+sExtension.length) {
-                            sExtension = "";
-                        }
-
-                        console.log(oImportFilesListModel.fnGetCurrentPath(), importPageFileNameTextField.text, sExtension);
+                        console.log('Import button clicked', oImportFilesListModel.fnGetCurrentPath(), importPageFileNameTextField.text);
                         oPasswordListModel.fnImport(
-                            oImportFilesListModel.fnGetCurrentPath()+'/'+importPageFileNameTextField.text+sExtension,
+                            oImportFilesListModel.fnGetCurrentPath()+'/'+importPageFileNameTextField.text,
                             importPageNameFilterComboBox.currentIndex
                         );
 

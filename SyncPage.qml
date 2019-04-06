@@ -49,6 +49,26 @@ Component {
                         "Upload and add new"
                     ]
 
+                    delegate: ItemDelegate {
+                        id: control
+                        width: parent.width
+
+                        contentItem: Text {
+                            text: modelData
+                            color: "#000000"
+                            font: control.font
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        background: Rectangle {
+                            anchors.fill: control
+                            color: control.highlighted ? "skyblue" : "transparent"
+                        }
+
+                        highlighted: syncPageSyncMethodComboBox.highlightedIndex === index
+                    }
+
                     currentIndex: stackView.syncPageSyncMethod
 
                     onCurrentIndexChanged: {

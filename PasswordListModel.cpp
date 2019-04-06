@@ -511,6 +511,14 @@ QVariant PasswordListModel::fnFromByteArray(QVariant oByteArray, QVariant iSyncM
     qDebug() << "iSyncMethod.toInt()" << iSyncMethod.toInt();
 
     if (iSyncMethod.toInt() == 0) {
+        QJsonArray oPasswordsJsonArray = this->fnGetPasswordsArray();
+
+        for (int iLocalIndex=0; iLocalIndex<oPasswordsJsonArray.size(); iLocalIndex++) {
+            QJsonObject oLocalJsonObject = oPasswordsJsonArray[iLocalIndex].toObject();
+
+            this->poPasswordChangeHistoryListModel->fnAddJsonObject("update", oLocalJsonObject);
+        }
+
         this->fnSetPasswordsArray(oJsonDocument.array());
     }
     if (iSyncMethod.toInt() == 1 || iSyncMethod.toInt() == 2) {
@@ -546,6 +554,7 @@ QVariant PasswordListModel::fnFromByteArray(QVariant oByteArray, QVariant iSyncM
                         bFound = true;
                         if (iSyncMethod.toInt() == 1) {
                             oPasswordsJsonArray.replace(iLocalIndex, oRemoteJsonObject);
+                            this->poPasswordChangeHistoryListModel->fnAddJsonObject("update", oLocalJsonObject);
                         }
                     }
                 }
@@ -643,11 +652,11 @@ QVariant PasswordListModel::fnExport(QString sFilePath, int iType)
     return 1;
 }
 
-QVariant PasswordListModel::fnImport(QString sFilePath, int iType)
+QVariant PasswordListModel::fnImport(QString sFilePath, int iSyncType)
 {
     //QString sFilePath = QUrl(sURL).toLocalFile();
 
-    qDebug() << __FUNCTION__ << sFilePath << iType;
+    qDebug() << __FUNCTION__ << sFilePath << iSyncType;
 
     beginResetModel();
 
@@ -667,11 +676,11 @@ QVariant PasswordListModel::fnImport(QString sFilePath, int iType)
 
     int iResult = 1;
 
-    if (iType==0 || iType==1 || iType==2) {
-        iResult = this->fnFromByteArray(oFileObj.readAll(), iType, false).toInt();
-    } else if (iType==3 || iType==4 || iType==5) {
+    if (iSyncType==0 || iSyncType==1 || iSyncType==2) {
+        iResult = this->fnFromByteArray(oFileObj.readAll(), iSyncType, false).toInt();
+    } else if (iSyncType==3 || iSyncType==4 || iSyncType==5) {
 
-        if (iType==3) {
+        if (iSyncType==3) {
             this->fnInit();
         }
 
@@ -723,15 +732,15 @@ QVariant PasswordListModel::fnImport(QString sFilePath, int iType)
                 } else {
                     qDebug() << "Save property " << sCurrentProperty << sCurrentPropertyValue;
                     if (sCurrentProperty=="name") {
-                        if (iType==3) {
+                        if (iSyncType==3) {
                             iRowIndex = this->fnAddRow().toInt();
                         }
-                        if (iType==4 || iType==5) {
+                        if (iSyncType==4 || iSyncType==5) {
                             iRowIndex = this->fnFind(sCurrentProperty, sCurrentPropertyValue).toInt();
 
                             if (iRowIndex==-1) {
                                 iRowIndex = this->fnAddRow().toInt();
-                            } else if (iType==5) {
+                            } else if (iSyncType==5) {
                                 iRowIndex = -1;
                             }
                         }
