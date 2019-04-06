@@ -161,6 +161,7 @@ Component {
                     //Layout.fillWidth: true
 
                     onClicked: {
+                        oExportFilesListModel.fnUpdate();
                         stackView.push(exportPage);
                     }
                 }
@@ -172,48 +173,10 @@ Component {
                     //Layout.fillWidth: true
 
                     onClicked: {
+                        oImportFilesListModel.fnUpdate();
                         stackView.push(importPage);
                     }
-                }
-
-                FileDialog {
-                    id: passwordsListViewPageExportFileDialog
-                    title: 'Export'
-                    folder: shortcuts.home
-                    nameFilters: [ "JSON (*.json)", "TEXT (*.txt)" ]
-                    selectMultiple: false
-                    selectExisting: false
-
-                    property var oFilterExtension: [
-                        ".json",
-                        ".txt"
-                    ]
-
-                    onAccepted: {
-                        console.log('Export', passwordsListViewPageExportFileDialog.fileUrls, passwordsListViewPageExportFileDialog.fileUrl);
-                        oPasswordListModel.fnExport(
-                            passwordsListViewPageExportFileDialog.fileUrl+oFilterExtension[passwordsListViewPageExportFileDialog.selectedNameFilterIndex],
-                            passwordsListViewPageExportFileDialog.selectedNameFilterIndex
-                        );
-                    }
-                }
-
-                FileDialog {
-                    id: passwordsListViewPageImportFileDialog
-                    title: 'Import'
-                    folder: shortcuts.home
-                    nameFilters: [ "JSON Replace (*.json)", "JSON Merge (*.json)", "JSON Add (*.json)", "TEXT Replace (*.txt)", "TEXT Merge (*.txt)", "TEXT Add (*.txt)" ]
-                    selectMultiple: false
-                    selectExisting: true
-
-                    onAccepted: {
-                        console.log('Import', passwordsListViewPageImportFileDialog.fileUrls, passwordsListViewPageImportFileDialog.fileUrl);
-                        oPasswordListModel.fnImport(
-                            passwordsListViewPageImportFileDialog.fileUrl,
-                            passwordsListViewPageImportFileDialog.selectedNameFilterIndex
-                        );
-                    }
-                }
+                }                
             }
 
             RowLayout {

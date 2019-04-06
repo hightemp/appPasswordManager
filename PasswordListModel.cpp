@@ -90,7 +90,7 @@ QVariant PasswordListModel::data(const QModelIndex &oIndex, int iRole) const
     } if (iRole == AdditionalRole) {
         return oJsonObject["additional"].toString();
     } if (iRole == IDRole) {
-        return oJsonObject["id"].toString();
+        return QString::number(oJsonObject["id"].toDouble(), 'f', 0);
     } if (iRole == SourceIndexRole) {
         return oIndex.row();
     } if (iRole == CreatedAtRole) {
