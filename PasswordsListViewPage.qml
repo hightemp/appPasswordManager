@@ -98,8 +98,8 @@ Component {
                               "<b>"+name+"</b>"+
                               (oSettingsModel.fnGetBoolValue("settingsPageShowUserInList") ||
                                oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList") ? "<br>" : "" ) +
-                              (oSettingsModel.fnGetBoolValue("settingsPageShowIdInList") ? "<b>Id:</b> "+id : " ") +
-                              (oSettingsModel.fnGetBoolValue("settingsPageShowUserInList") ? "<b>User:</b> "+user : " ") +
+                              (oSettingsModel.fnGetBoolValue("settingsPageShowIdInList") ? "<b>Id:</b> "+id+" " : "") +
+                              (oSettingsModel.fnGetBoolValue("settingsPageShowUserInList") ? "<b>User:</b> "+user+" " : "") +
                               (oSettingsModel.fnGetBoolValue("settingsPageShowPasswordInList") ? "<b>Password:</b> "+password : "")
                     }
 

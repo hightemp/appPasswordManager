@@ -213,7 +213,7 @@ bool PasswordListModel::insertRows(int iPosition, int iRows, const QModelIndex &
         oJsonObject["id"] = QDateTime::currentDateTime().toMSecsSinceEpoch(); //this->fnGenerateIndex();
         oJsonObject["createdAt"] = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss");
 
-        qDebug() << "Created JSON object:" << oJsonObject;
+        qDebug() << "Created JSON object: " << oJsonObject << " at: " << iPosition;
 
         QJsonValue oJsonValue(oJsonObject);
         oPasswordsJsonArray.insert(iPosition, oJsonValue);
@@ -429,9 +429,11 @@ QVariant PasswordListModel::fnAddRow(QJsonObject oJsonObject)
     qDebug() << __FUNCTION__;
 
     int iSize = this->fnSize().toInt();
-    int iIndex = iSize-1;
 
     this->insertRows(iSize, 1);
+
+    iSize = this->fnSize().toInt();
+    int iIndex = iSize-1;
 
     this->fnUpdateRow(iIndex, oJsonObject, false);
 

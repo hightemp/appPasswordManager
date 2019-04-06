@@ -51,9 +51,9 @@ Component {
                 highlight: Rectangle {
                     opacity: 0.5
                     color: "skyblue"
-                    width: ListView.view.width
-                    height: ListView.view.currentItem.height
-                    y: ListView.view.currentItem.y
+                    width: ListView.view ? ListView.view.width : 0
+                    height: ListView.view && ListView.view.currentItem ? ListView.view.currentItem.height : 0
+                    y: ListView.view && ListView.view.currentItem ? ListView.view.currentItem.y : 0
                     //z: Infinity
                 }
 
@@ -74,7 +74,7 @@ Component {
                     property bool isCurrent: ListView.isCurrentItem
 
                     width: view.width
-                    height: 20+5*passwordsChangeHistoryPageListViewFontMetrics.height
+                    height: 20+6*passwordsChangeHistoryPageListViewFontMetrics.height
 
                     Label {
                         padding: 10
@@ -85,6 +85,7 @@ Component {
                         renderType: Text.NativeRendering
                         text: "<b>Event time:</b> "+timestamp+"<br>"+
                               "<b>Event type:</b> "+eventType+"<br>"+
+                              "<b>Id:</b> "+id+"<br>"+
                               "<b>Name:</b> "+name+"<br>"+
                               "<b>User:</b> "+user+"<br>"+
                               "<b>Password:</b> "+password+"<br>"//+
@@ -123,6 +124,7 @@ Component {
 
                     onClicked: {
                         oPasswordChangeHistoryListModel.fnRestore(stackView.iHistroyRecordIndex);
+                        oPasswordListModel.fnSave();
                     }
                 }
 
@@ -160,6 +162,7 @@ Component {
 
                     onClicked: {
                         oPasswordChangeHistoryListModel.fnClear();
+                        oPasswordListModel.fnSave();
                     }
                 }
             }
@@ -174,6 +177,7 @@ Component {
 
             onYes: {
                 oPasswordChangeHistoryListModel.fnRemoveRow(stackView.iHistroyRecordIndex);
+                oPasswordListModel.fnSave();
             }
         }
     }

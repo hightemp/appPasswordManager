@@ -199,6 +199,8 @@ Component {
                         "additional": additionalTextArea.text
                     };
 
+                    console.log('stackView.bPasswordsListIsNewItem', stackView.bPasswordsListIsNewItem);
+
                     if (stackView.bPasswordsListIsNewItem) {
                         stackView.iEditedRecordIndex = oPasswordListModel.fnAddRow(oRecord);
                     } else {
