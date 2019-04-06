@@ -138,10 +138,9 @@ Component {
                         //oSettingsModel.fnUpdateIntValue("settingsPageStyle", settingsPageStyle.currentIndex);
                         oSettingsModel.fnUpdateStringValue("settingsPageServerHost", settingsPageServerHost.text);
                         oSettingsModel.fnUpdateStringValue("settingsPageServerPort", settingsPageServerPort.text);
-                        passwordSyncServer.listen = false;
                         passwordSyncServer.host = settingsPageServerHost.text;
                         passwordSyncServer.port = settingsPageServerPort.text;
-                        passwordSyncServer.listen = true;
+                        console.log('passwordSyncServer.listen', passwordSyncServer.listen);
                         //oStyler.fnSetStyle(settingsPageStyle.currentText);
                         oPasswordListModel.fnUpdate();
                         oSettingsModel.fnSave();

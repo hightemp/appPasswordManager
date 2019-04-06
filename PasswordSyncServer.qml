@@ -68,6 +68,14 @@ WebSocketServer {
         stackView.settingsPageServerStatusLabelText = "Server status: Error "+errorString
     }
 
+    onHostChanged: {
+        console.log("onHostChanged", host);
+    }
+
+    onPortChanged: {
+        console.log("onPortChanged", port);
+    }
+
     onListenChanged: {
         if (listen) {
             stackView.settingsPageServerStatusLabelText = "Server status: listening "+host+":"+port;
