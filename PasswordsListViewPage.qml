@@ -14,6 +14,8 @@ Component {
         TextField {
             id: passwordsListViewPageFilterTextField
 
+            z: Infinity
+
             anchors {
                 right: parent.right
                 top: parent.top

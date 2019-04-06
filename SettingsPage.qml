@@ -75,12 +75,16 @@ Component {
                         id: settingsPageServerHost
                         placeholderText: "0.0.0.0"
                         text: stackView.settingsPageServerHostText
+
+                        selectByMouse: true
                     }
                     TextField {
                         id: settingsPageServerPort
                         width: 100
                         placeholderText: "3002"
                         text: stackView.settingsPageServerPortText
+
+                        selectByMouse: true
                     }
                 }
                 Label {
@@ -138,13 +142,23 @@ Component {
                         //oSettingsModel.fnUpdateIntValue("settingsPageStyle", settingsPageStyle.currentIndex);
                         oSettingsModel.fnUpdateStringValue("settingsPageServerHost", settingsPageServerHost.text);
                         oSettingsModel.fnUpdateStringValue("settingsPageServerPort", settingsPageServerPort.text);
+                        passwordSyncServer.onListenChanged.connect(settingsPageSaveButton.fnOnSettingsPageSaveButton);
                         passwordSyncServer.host = settingsPageServerHost.text;
                         passwordSyncServer.port = settingsPageServerPort.text;
                         console.log('passwordSyncServer.listen', passwordSyncServer.listen);
                         //oStyler.fnSetStyle(settingsPageStyle.currentText);
+                        //oPasswordListModel.fnUpdate();
+                        //oSettingsModel.fnSave();
+                        //stackView.pop();
+                    }
+
+                    function fnOnSettingsPageSaveButton()
+                    {
+                        passwordSyncServer.onListenChanged.disconnect(settingsPageSaveButton.fnOnSettingsPageSaveButton);
+                        passwordSyncServer.listen = true;
+                        console.log('fnOnSettingsPageSaveButton passwordSyncServer.listen', passwordSyncServer.listen);
                         oPasswordListModel.fnUpdate();
                         oSettingsModel.fnSave();
-                        //stackView.pop();
                     }
                 }
             }

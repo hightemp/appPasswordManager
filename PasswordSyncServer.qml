@@ -70,10 +70,16 @@ WebSocketServer {
 
     onHostChanged: {
         console.log("onHostChanged", host);
+        if (listen) {
+            stackView.settingsPageServerStatusLabelText = "Server status: listening "+host+":"+port;
+        }
     }
 
     onPortChanged: {
         console.log("onPortChanged", port);
+        if (listen) {
+            stackView.settingsPageServerStatusLabelText = "Server status: listening "+host+":"+port;
+        }
     }
 
     onListenChanged: {
