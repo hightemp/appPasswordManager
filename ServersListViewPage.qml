@@ -30,9 +30,9 @@ Component {
                 highlight: Rectangle {
                     opacity: 0.5
                     color: "skyblue"
-                    width: ListView.view.width
-                    height: ListView.view.currentItem.height
-                    y: ListView.view.currentItem.y
+                    width: ListView.view ? ListView.view.width : 0
+                    height: ListView.view ? ListView.view.currentItem.height : 0
+                    y: ListView.view ? ListView.view.currentItem.y : 0
                     //z: Infinity
                 }
 
