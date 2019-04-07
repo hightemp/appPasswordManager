@@ -811,8 +811,16 @@ QVariant PasswordListModel::fnFind(QString sKey, QString sValue)
     for (int iIndex = 0; iIndex<oPasswordsJsonArray.size(); iIndex++) {
         QJsonObject oJsonObject = oPasswordsJsonArray.at(iIndex).toObject();
 
-        if (oJsonObject[sKey]==sValue) {
-            return iIndex;
+        if (oJsonObject[sKey].isString()) {
+            if (oJsonObject[sKey]==sValue) {
+                return iIndex;
+            }
+        }
+
+        if (oJsonObject[sKey].isDouble()) {
+            if (QString::number(oJsonObject[sKey].toDouble(), 'f', 0)==sValue) {
+                return iIndex;
+            }
         }
     }
 
